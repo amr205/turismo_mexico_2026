@@ -1,0 +1,8 @@
+{
+  "n_train": 101,
+  "n_test": 26,
+  "train_end_date": "2019-01-01",
+  "test_start_date": "2019-04-01",
+  "model_type": "xgboost",
+  "target_col": "consumo_turistico_interior_total"
+}

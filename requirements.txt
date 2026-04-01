@@ -1,0 +1,12 @@
+pandas>=2.0,<3.0
+numpy>=1.24,<2.0
+matplotlib>=3.7,<4.0
+dvc>=3.50,<4.0
+xgboost>=2.0,<3.0
+scikit-learn>=1.3,<2.0
+statsmodels>=0.14,<0.15
+shap>=0.45,<0.50
+
+# Soporte futuro para redes neuronales (descomentar al agregar LSTM u otros modelos):
+# torch>=2.0,<3.0
+# keras>=3.0,<4.0

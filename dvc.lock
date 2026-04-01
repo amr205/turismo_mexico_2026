@@ -1,0 +1,430 @@
+schema: '2.0'
+stages:
+  clean_consumo:
+    cmd: python src/clean_file_consumo_turistico.py
+    deps:
+    - path: data/raw/consumo_turistico_inegi.csv
+      hash: md5
+      md5: 9fc31c12d970f5b900b5d65b88e83e20
+      size: 6225
+    - path: src/clean_file_consumo_turistico.py
+      hash: md5
+      md5: da6a429f8c7a44cc7277b62897e76949
+      size: 3115
+    outs:
+    - path: data/processed/consumo_turistico_inegi_clean.csv
+      hash: md5
+      md5: 5bc06c7b751f3418a416dd562c7e8003
+      size: 5460
+  clean_ivf:
+    cmd: python src/clean_file_indice_volumen_fisico.py
+    deps:
+    - path: data/raw/indice_volumen_fisico_inegi.csv
+      hash: md5
+      md5: 93ed5cddac61b6e61d20f5da139db592
+      size: 5978
+    - path: src/clean_file_indice_volumen_fisico.py
+      hash: md5
+      md5: 2b2424dd821f86582b810384cbd8711b
+      size: 3007
+    outs:
+    - path: data/processed/indice_volumen_fisico_inegi_clean.csv
+      hash: md5
+      md5: 9847852b371a8bb8a4525c3e22d1949d
+      size: 5524
+  clean_indicadores:
+    cmd: python src/clean_turismo_indicadores.py
+    deps:
+    - path: data/raw/turismo_indicadores_inegi.csv
+      hash: md5
+      md5: 5a79f90dd7762e0f06c71ea8b34dc6f1
+      size: 35811
+    - path: src/clean_turismo_indicadores.py
+      hash: md5
+      md5: 6d763abe895bb3757ef7a483616bb715
+      size: 2918
+    outs:
+    - path: data/processed/turismo_indicadores_inegi_clean.csv
+      hash: md5
+      md5: 1aa5c7ed58fc6541f3e9a8590e797466
+      size: 320410
+  plot_timeseries:
+    cmd: python src/plot_timeseries.py
+    deps:
+    - path: data/processed/consumo_turistico_inegi_clean.csv
+      hash: md5
+      md5: 5bc06c7b751f3418a416dd562c7e8003
+      size: 5460
+    - path: data/processed/indice_volumen_fisico_inegi_clean.csv
+      hash: md5
+      md5: 9847852b371a8bb8a4525c3e22d1949d
+      size: 5524
+    - path: src/plot_timeseries.py
+      hash: md5
+      md5: cb741e094868ec2b05c8ece5bf7b5407
+      size: 1276
+    outs:
+    - path: plots/consumo_turistico.png
+      hash: md5
+      md5: c65034400e60780f8e0174eb07db354a
+      size: 73846
+    - path: plots/ivf_turismo.png
+      hash: md5
+      md5: 6cb661622bf735a3faff51c3b80c7c3a
+      size: 70580
+  features_consumo:
+    cmd: python src/features.py --dataset consumo
+    deps:
+    - path: data/processed/consumo_turistico_inegi_clean.csv
+      hash: md5
+      md5: 5bc06c7b751f3418a416dd562c7e8003
+      size: 5460
+    - path: params.yaml
+      hash: md5
+      md5: 9b948a99e974074602e1c9e8fef757b7
+      size: 615
+    - path: src/features.py
+      hash: md5
+      md5: 42c9c42d18a7c693f378e7f55d161d5e
+      size: 2174
+    params:
+      params.yaml:
+        features:
+          lags:
+          - 1
+          - 2
+          - 3
+          - 4
+          rolling_windows:
+          - 2
+          - 4
+          add_quarter_dummies: true
+          add_trend: true
+        target.consumo: consumo_turistico_interior_total
+    outs:
+    - path: data/features/features_consumo.csv
+      hash: md5
+      md5: 4c4ae4ca0443893b8430df8369f9bedb
+      size: 8003
+  features_ivf:
+    cmd: python src/features.py --dataset ivf
+    deps:
+    - path: data/processed/indice_volumen_fisico_inegi_clean.csv
+      hash: md5
+      md5: 9847852b371a8bb8a4525c3e22d1949d
+      size: 5524
+    - path: params.yaml
+      hash: md5
+      md5: 9b948a99e974074602e1c9e8fef757b7
+      size: 615
+    - path: src/features.py
+      hash: md5
+      md5: 42c9c42d18a7c693f378e7f55d161d5e
+      size: 2174
+    params:
+      params.yaml:
+        features:
+          lags:
+          - 1
+          - 2
+          - 3
+          - 4
+          rolling_windows:
+          - 2
+          - 4
+          add_quarter_dummies: true
+          add_trend: true
+        target.ivf: ivf_turistico_total
+    outs:
+    - path: data/features/features_ivf.csv
+      hash: md5
+      md5: 8f403d4b9898470374032d53c676aeea
+      size: 8200
+  train_consumo:
+    cmd: python src/train.py --dataset consumo
+    deps:
+    - path: data/features/features_consumo.csv
+      hash: md5
+      md5: 4c4ae4ca0443893b8430df8369f9bedb
+      size: 8003
+    - path: params.yaml
+      hash: md5
+      md5: 9b948a99e974074602e1c9e8fef757b7
+      size: 615
+    - path: src/models/__init__.py
+      hash: md5
+      md5: 6cefb80b2cced4e528de23061ad38059
+      size: 926
+    - path: src/models/xgboost_model.py
+      hash: md5
+      md5: 595832f62a712cff62e62c0c6d4cb073
+      size: 909
+    - path: src/train.py
+      hash: md5
+      md5: 4879869339134330f9d745a406a6a116
+      size: 2243
+    params:
+      params.yaml:
+        model:
+          type: xgboost
+          xgboost:
+            n_estimators: 100
+            max_depth: 3
+            learning_rate: 0.1
+            subsample: 0.8
+            colsample_bytree: 0.8
+            objective: reg:squarederror
+        target.consumo: consumo_turistico_interior_total
+        train:
+          test_size: 0.2
+          random_state: 42
+    outs:
+    - path: models/split_consumo.json
+      hash: md5
+      md5: 674aa3b85f9c87b2f9485d7c0fd7853c
+      size: 191
+    - path: models/xgboost_consumo.json
+      hash: md5
+      md5: 0e90c5978fb353c522d9048a2246e0cd
+      size: 101024
+  train_ivf:
+    cmd: python src/train.py --dataset ivf
+    deps:
+    - path: data/features/features_ivf.csv
+      hash: md5
+      md5: 8f403d4b9898470374032d53c676aeea
+      size: 8200
+    - path: params.yaml
+      hash: md5
+      md5: 9b948a99e974074602e1c9e8fef757b7
+      size: 615
+    - path: src/models/__init__.py
+      hash: md5
+      md5: 6cefb80b2cced4e528de23061ad38059
+      size: 926
+    - path: src/models/xgboost_model.py
+      hash: md5
+      md5: 595832f62a712cff62e62c0c6d4cb073
+      size: 909
+    - path: src/train.py
+      hash: md5
+      md5: 4879869339134330f9d745a406a6a116
+      size: 2243
+    params:
+      params.yaml:
+        model:
+          type: xgboost
+          xgboost:
+            n_estimators: 100
+            max_depth: 3
+            learning_rate: 0.1
+            subsample: 0.8
+            colsample_bytree: 0.8
+            objective: reg:squarederror
+        target.ivf: ivf_turistico_total
+        train:
+          test_size: 0.2
+          random_state: 42
+    outs:
+    - path: models/split_ivf.json
+      hash: md5
+      md5: 2a7cd342eda6bf028548b8b3f632437a
+      size: 178
+    - path: models/xgboost_ivf.json
+      hash: md5
+      md5: c7694fe2fae5499d0657f836fcc2bff8
+      size: 105525
+  evaluate_consumo:
+    cmd: python src/evaluate.py --dataset consumo
+    deps:
+    - path: data/features/features_consumo.csv
+      hash: md5
+      md5: 4c4ae4ca0443893b8430df8369f9bedb
+      size: 8003
+    - path: models/split_consumo.json
+      hash: md5
+      md5: 674aa3b85f9c87b2f9485d7c0fd7853c
+      size: 191
+    - path: models/xgboost_consumo.json
+      hash: md5
+      md5: 0e90c5978fb353c522d9048a2246e0cd
+      size: 101024
+    - path: params.yaml
+      hash: md5
+      md5: 9b948a99e974074602e1c9e8fef757b7
+      size: 615
+    - path: src/evaluate.py
+      hash: md5
+      md5: 7abc930b04a5c6d69d61a6c155111702
+      size: 3296
+    - path: src/models/__init__.py
+      hash: md5
+      md5: 6cefb80b2cced4e528de23061ad38059
+      size: 926
+    - path: src/models/xgboost_model.py
+      hash: md5
+      md5: 595832f62a712cff62e62c0c6d4cb073
+      size: 909
+    params:
+      params.yaml:
+        evaluate:
+          forecast_horizon: 8
+        model.type: xgboost
+        target.consumo: consumo_turistico_interior_total
+    outs:
+    - path: metrics/metrics_consumo.json
+      hash: md5
+      md5: f334ad7cd8dc2ad4bfccfd6a2727535f
+      size: 93
+    - path: plots/forecast_consumo.png
+      hash: md5
+      md5: f83cf029e0fc6f64ab0ee876b484be0e
+      size: 66767
+  evaluate_ivf:
+    cmd: python src/evaluate.py --dataset ivf
+    deps:
+    - path: data/features/features_ivf.csv
+      hash: md5
+      md5: 8f403d4b9898470374032d53c676aeea
+      size: 8200
+    - path: models/split_ivf.json
+      hash: md5
+      md5: 2a7cd342eda6bf028548b8b3f632437a
+      size: 178
+    - path: models/xgboost_ivf.json
+      hash: md5
+      md5: c7694fe2fae5499d0657f836fcc2bff8
+      size: 105525
+    - path: params.yaml
+      hash: md5
+      md5: 9b948a99e974074602e1c9e8fef757b7
+      size: 615
+    - path: src/evaluate.py
+      hash: md5
+      md5: 7abc930b04a5c6d69d61a6c155111702
+      size: 3296
+    - path: src/models/__init__.py
+      hash: md5
+      md5: 6cefb80b2cced4e528de23061ad38059
+      size: 926
+    - path: src/models/xgboost_model.py
+      hash: md5
+      md5: 595832f62a712cff62e62c0c6d4cb073
+      size: 909
+    params:
+      params.yaml:
+        evaluate:
+          forecast_horizon: 8
+        model.type: xgboost
+        target.ivf: ivf_turistico_total
+    outs:
+    - path: metrics/metrics_ivf.json
+      hash: md5
+      md5: 8b57a67c0671380fad11cda06ed20b93
+      size: 93
+    - path: plots/forecast_ivf.png
+      hash: md5
+      md5: ee3b52bc27438b3153654ea8621f1f05
+      size: 69241
+  interpret_consumo:
+    cmd: python src/interpret.py --dataset consumo
+    deps:
+    - path: data/features/features_consumo.csv
+      hash: md5
+      md5: 4c4ae4ca0443893b8430df8369f9bedb
+      size: 8003
+    - path: data/processed/consumo_turistico_inegi_clean.csv
+      hash: md5
+      md5: 5bc06c7b751f3418a416dd562c7e8003
+      size: 5460
+    - path: models/split_consumo.json
+      hash: md5
+      md5: 674aa3b85f9c87b2f9485d7c0fd7853c
+      size: 191
+    - path: models/xgboost_consumo.json
+      hash: md5
+      md5: 0e90c5978fb353c522d9048a2246e0cd
+      size: 101024
+    - path: params.yaml
+      hash: md5
+      md5: 9b948a99e974074602e1c9e8fef757b7
+      size: 615
+    - path: src/interpret.py
+      hash: md5
+      md5: f6e57991954750e9de731e0c3b8a0c86
+      size: 3578
+    - path: src/models/__init__.py
+      hash: md5
+      md5: 6cefb80b2cced4e528de23061ad38059
+      size: 926
+    - path: src/models/xgboost_model.py
+      hash: md5
+      md5: 595832f62a712cff62e62c0c6d4cb073
+      size: 909
+    params:
+      params.yaml:
+        interpret:
+          stl_period: 4
+          shap_max_display: 10
+        model.type: xgboost
+        target.consumo: consumo_turistico_interior_total
+    outs:
+    - path: plots/shap_consumo.png
+      hash: md5
+      md5: d5f14c1134748df88a8fdec216cf04f7
+      size: 27392
+    - path: plots/stl_consumo.png
+      hash: md5
+      md5: d4ca83399a24c64029a1e932863e18c1
+      size: 114366
+  interpret_ivf:
+    cmd: python src/interpret.py --dataset ivf
+    deps:
+    - path: data/features/features_ivf.csv
+      hash: md5
+      md5: 8f403d4b9898470374032d53c676aeea
+      size: 8200
+    - path: data/processed/indice_volumen_fisico_inegi_clean.csv
+      hash: md5
+      md5: 9847852b371a8bb8a4525c3e22d1949d
+      size: 5524
+    - path: models/split_ivf.json
+      hash: md5
+      md5: 2a7cd342eda6bf028548b8b3f632437a
+      size: 178
+    - path: models/xgboost_ivf.json
+      hash: md5
+      md5: c7694fe2fae5499d0657f836fcc2bff8
+      size: 105525
+    - path: params.yaml
+      hash: md5
+      md5: 9b948a99e974074602e1c9e8fef757b7
+      size: 615
+    - path: src/interpret.py
+      hash: md5
+      md5: f6e57991954750e9de731e0c3b8a0c86
+      size: 3578
+    - path: src/models/__init__.py
+      hash: md5
+      md5: 6cefb80b2cced4e528de23061ad38059
+      size: 926
+    - path: src/models/xgboost_model.py
+      hash: md5
+      md5: 595832f62a712cff62e62c0c6d4cb073
+      size: 909
+    params:
+      params.yaml:
+        interpret:
+          stl_period: 4
+          shap_max_display: 10
+        model.type: xgboost
+        target.ivf: ivf_turistico_total
+    outs:
+    - path: plots/shap_ivf.png
+      hash: md5
+      md5: f4bf41992e88e74c48b3c34b37264017
+      size: 25957
+    - path: plots/stl_ivf.png
+      hash: md5
+      md5: 7b44d33b2ce1751b42a1769f898bb869
+      size: 118295

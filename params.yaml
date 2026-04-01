@@ -1,0 +1,38 @@
+target:
+  consumo: "consumo_turistico_interior_total"
+  ivf: "ivf_turistico_total"
+
+features:
+  lags: [1, 2, 3, 4]
+  rolling_windows: [2, 4]
+  add_quarter_dummies: true
+  add_trend: true
+
+model:
+  type: xgboost
+
+  xgboost:
+    n_estimators: 100
+    max_depth: 3
+    learning_rate: 0.1
+    subsample: 0.8
+    colsample_bytree: 0.8
+    objective: "reg:squarederror"
+
+  # lstm:
+  #   hidden_size: 64
+  #   num_layers: 2
+  #   epochs: 100
+  #   learning_rate: 0.001
+  #   sequence_length: 8
+
+train:
+  test_size: 0.2
+  random_state: 42
+
+evaluate:
+  forecast_horizon: 8
+
+interpret:
+  stl_period: 4
+  shap_max_display: 10

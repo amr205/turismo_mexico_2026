@@ -1,0 +1,186 @@
+stages:
+
+  clean_consumo:
+    cmd: python src/clean_file_consumo_turistico.py
+    deps:
+      - src/clean_file_consumo_turistico.py
+      - data/raw/consumo_turistico_inegi.csv
+    outs:
+      - data/processed/consumo_turistico_inegi_clean.csv:
+          cache: false
+
+  clean_ivf:
+    cmd: python src/clean_file_indice_volumen_fisico.py
+    deps:
+      - src/clean_file_indice_volumen_fisico.py
+      - data/raw/indice_volumen_fisico_inegi.csv
+    outs:
+      - data/processed/indice_volumen_fisico_inegi_clean.csv:
+          cache: false
+
+  clean_indicadores:
+    cmd: python src/clean_turismo_indicadores.py
+    deps:
+      - src/clean_turismo_indicadores.py
+      - data/raw/turismo_indicadores_inegi.csv
+    outs:
+      - data/processed/turismo_indicadores_inegi_clean.csv:
+          cache: false
+
+  plot_timeseries:
+    cmd: python src/plot_timeseries.py
+    deps:
+      - src/plot_timeseries.py
+      - data/processed/consumo_turistico_inegi_clean.csv
+      - data/processed/indice_volumen_fisico_inegi_clean.csv
+    outs:
+      - plots/consumo_turistico.png:
+          cache: false
+      - plots/ivf_turismo.png:
+          cache: false
+
+  features_consumo:
+    cmd: python src/features.py --dataset consumo
+    deps:
+      - src/features.py
+      - data/processed/consumo_turistico_inegi_clean.csv
+      - params.yaml
+    params:
+      - target.consumo
+      - features
+    outs:
+      - data/features/features_consumo.csv:
+          cache: false
+
+  features_ivf:
+    cmd: python src/features.py --dataset ivf
+    deps:
+      - src/features.py
+      - data/processed/indice_volumen_fisico_inegi_clean.csv
+      - params.yaml
+    params:
+      - target.ivf
+      - features
+    outs:
+      - data/features/features_ivf.csv:
+          cache: false
+
+  train_consumo:
+    cmd: python src/train.py --dataset consumo
+    deps:
+      - src/train.py
+      - src/models/__init__.py
+      - src/models/xgboost_model.py
+      - data/features/features_consumo.csv
+      - params.yaml
+    params:
+      - target.consumo
+      - model
+      - train
+    outs:
+      - models/split_consumo.json:
+          cache: false
+      - models/xgboost_consumo.json:
+          cache: false
+
+  train_ivf:
+    cmd: python src/train.py --dataset ivf
+    deps:
+      - src/train.py
+      - src/models/__init__.py
+      - src/models/xgboost_model.py
+      - data/features/features_ivf.csv
+      - params.yaml
+    params:
+      - target.ivf
+      - model
+      - train
+    outs:
+      - models/split_ivf.json:
+          cache: false
+      - models/xgboost_ivf.json:
+          cache: false
+
+  evaluate_consumo:
+    cmd: python src/evaluate.py --dataset consumo
+    deps:
+      - src/evaluate.py
+      - src/models/__init__.py
+      - src/models/xgboost_model.py
+      - data/features/features_consumo.csv
+      - models/xgboost_consumo.json
+      - models/split_consumo.json
+      - params.yaml
+    params:
+      - target.consumo
+      - model.type
+      - evaluate
+    metrics:
+      - metrics/metrics_consumo.json:
+          cache: false
+    plots:
+      - plots/forecast_consumo.png:
+          cache: false
+
+  evaluate_ivf:
+    cmd: python src/evaluate.py --dataset ivf
+    deps:
+      - src/evaluate.py
+      - src/models/__init__.py
+      - src/models/xgboost_model.py
+      - data/features/features_ivf.csv
+      - models/xgboost_ivf.json
+      - models/split_ivf.json
+      - params.yaml
+    params:
+      - target.ivf
+      - model.type
+      - evaluate
+    metrics:
+      - metrics/metrics_ivf.json:
+          cache: false
+    plots:
+      - plots/forecast_ivf.png:
+          cache: false
+
+  interpret_consumo:
+    cmd: python src/interpret.py --dataset consumo
+    deps:
+      - src/interpret.py
+      - src/models/__init__.py
+      - src/models/xgboost_model.py
+      - data/features/features_consumo.csv
+      - data/processed/consumo_turistico_inegi_clean.csv
+      - models/xgboost_consumo.json
+      - models/split_consumo.json
+      - params.yaml
+    params:
+      - target.consumo
+      - model.type
+      - interpret
+    plots:
+      - plots/shap_consumo.png:
+          cache: false
+      - plots/stl_consumo.png:
+          cache: false
+
+  interpret_ivf:
+    cmd: python src/interpret.py --dataset ivf
+    deps:
+      - src/interpret.py
+      - src/models/__init__.py
+      - src/models/xgboost_model.py
+      - data/features/features_ivf.csv
+      - data/processed/indice_volumen_fisico_inegi_clean.csv
+      - models/xgboost_ivf.json
+      - models/split_ivf.json
+      - params.yaml
+    params:
+      - target.ivf
+      - model.type
+      - interpret
+    plots:
+      - plots/shap_ivf.png:
+          cache: false
+      - plots/stl_ivf.png:
+          cache: false
