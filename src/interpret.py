@@ -12,6 +12,7 @@ import os
 import sys
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import shap
 import yaml
@@ -40,12 +41,28 @@ DATASET_CONFIG = {
 }
 
 
+def resolver_dataset(dataset: str, params: dict) -> tuple:
+    """Devuelve (cfg, target_col) para datasets legacy o ivf_multi."""
+    if dataset in DATASET_CONFIG:
+        cfg = DATASET_CONFIG[dataset]
+        target_col = params["target"][cfg["target_key"]]
+        return cfg, target_col
+    target_col = params["ivf_multi"][dataset]["target"]
+    cfg = {
+        "features": f"data/features/features_{dataset}.csv",
+        "processed": "data/processed/indice_volumen_fisico_inegi_clean.csv",
+        "split_meta": f"models/split_{dataset}.json",
+        "shap_out": f"plots/shap_{dataset}.png",
+        "stl_out": f"plots/stl_{dataset}.png",
+    }
+    return cfg, target_col
+
+
 def interpret(dataset: str) -> None:
     with open("params.yaml") as f:
         params = yaml.safe_load(f)
 
-    cfg = DATASET_CONFIG[dataset]
-    target_col = params["target"][cfg["target_key"]]
+    cfg, target_col = resolver_dataset(dataset, params)
     model_type = params["model"]["type"]
     stl_period = params["interpret"]["stl_period"]
     shap_max_display = params["interpret"]["shap_max_display"]
@@ -80,6 +97,16 @@ def interpret(dataset: str) -> None:
     plt.close()
     print(f"Gráfica SHAP guardada en: {cfg['shap_out']}")
 
+    # Persistir valores SHAP y nombres de features para análisis cruzado
+    if params.get("interpret", {}).get("save_shap_values", False):
+        os.makedirs("data/shap", exist_ok=True)
+        shap_npz = f"data/shap/shap_values_{dataset}.npz"
+        feat_json = f"data/shap/feature_names_{dataset}.json"
+        np.savez(shap_npz, shap_values=shap_values)
+        with open(feat_json, "w") as f:
+            json.dump(list(X_train.columns), f)
+        print(f"Valores SHAP guardados en: {shap_npz}")
+
     # --- STL ---
     df_proc = pd.read_csv(cfg["processed"], parse_dates=["date"])
     df_proc = df_proc.set_index("date").sort_index()
@@ -108,6 +135,6 @@ def interpret(dataset: str) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", choices=["consumo", "ivf"], required=True)
+    parser.add_argument("--dataset", required=True)
     args = parser.parse_args()
     interpret(args.dataset)

@@ -7,6 +7,10 @@ features:
   rolling_windows: [2, 4]
   add_quarter_dummies: true
   add_trend: true
+  train_start_date: "2018-01-01"   # null = toda la historia disponible; "2018-01-01" = solo desde indicadores
+  indicators:
+    aggregation: sum
+    fill_missing: 0
 
 model:
   type: xgboost
@@ -36,3 +40,18 @@ evaluate:
 interpret:
   stl_period: 4
   shap_max_display: 10
+  save_shap_values: true
+
+ivf_multi:
+  ivf_total_nacional:
+    target: "ivf_total_nacional"
+  ivf_turistico_total:
+    target: "ivf_turistico_total"
+  ivf_turistico_bienes:
+    target: "ivf_turistico_bienes"
+  ivf_turistico_servicios:
+    target: "ivf_turistico_servicios"
+
+forecast:
+  horizon: 5
+  future_indicator_method: "same_quarter_prior_year"

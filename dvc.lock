@@ -428,3 +428,1079 @@ stages:
       hash: md5
       md5: 7b44d33b2ce1751b42a1769f898bb869
       size: 118295
+  features_ivf_multi@ivf_total_nacional:
+    cmd: python src/features_ivf_multi.py --series ivf_total_nacional
+    deps:
+    - path: data/processed/indice_volumen_fisico_inegi_clean.csv
+      hash: md5
+      md5: 9847852b371a8bb8a4525c3e22d1949d
+      size: 5524
+    - path: data/processed/turismo_indicadores_inegi_clean.csv
+      hash: md5
+      md5: 1aa5c7ed58fc6541f3e9a8590e797466
+      size: 320410
+    - path: params.yaml
+      hash: md5
+      md5: cc6d726ffd631c4c0c49a733eaa6ea44
+      size: 1188
+    - path: src/features_ivf_multi.py
+      hash: md5
+      md5: fa150ddbe988e4d93bf0a9282165e57d
+      size: 4910
+    params:
+      params.yaml:
+        features:
+          lags:
+          - 1
+          - 2
+          - 3
+          - 4
+          rolling_windows:
+          - 2
+          - 4
+          add_quarter_dummies: true
+          add_trend: true
+          train_start_date: '2018-01-01'
+          indicators:
+            aggregation: sum
+            fill_missing: 0
+        ivf_multi.ivf_total_nacional:
+          target: ivf_total_nacional
+    outs:
+    - path: data/features/features_ivf_total_nacional.csv
+      hash: md5
+      md5: 29e1fadb3b92079b0f280b6d3f837767
+      size: 15245
+  features_ivf_multi@ivf_turistico_servicios:
+    cmd: python src/features_ivf_multi.py --series ivf_turistico_servicios
+    deps:
+    - path: data/processed/indice_volumen_fisico_inegi_clean.csv
+      hash: md5
+      md5: 9847852b371a8bb8a4525c3e22d1949d
+      size: 5524
+    - path: data/processed/turismo_indicadores_inegi_clean.csv
+      hash: md5
+      md5: 1aa5c7ed58fc6541f3e9a8590e797466
+      size: 320410
+    - path: params.yaml
+      hash: md5
+      md5: cc6d726ffd631c4c0c49a733eaa6ea44
+      size: 1188
+    - path: src/features_ivf_multi.py
+      hash: md5
+      md5: fa150ddbe988e4d93bf0a9282165e57d
+      size: 4910
+    params:
+      params.yaml:
+        features:
+          lags:
+          - 1
+          - 2
+          - 3
+          - 4
+          rolling_windows:
+          - 2
+          - 4
+          add_quarter_dummies: true
+          add_trend: true
+          train_start_date: '2018-01-01'
+          indicators:
+            aggregation: sum
+            fill_missing: 0
+        ivf_multi.ivf_turistico_servicios:
+          target: ivf_turistico_servicios
+    outs:
+    - path: data/features/features_ivf_turistico_servicios.csv
+      hash: md5
+      md5: 2d57a379b4aea918dcb1e0affe0b5a13
+      size: 15152
+  features_ivf_multi@ivf_turistico_total:
+    cmd: python src/features_ivf_multi.py --series ivf_turistico_total
+    deps:
+    - path: data/processed/indice_volumen_fisico_inegi_clean.csv
+      hash: md5
+      md5: 9847852b371a8bb8a4525c3e22d1949d
+      size: 5524
+    - path: data/processed/turismo_indicadores_inegi_clean.csv
+      hash: md5
+      md5: 1aa5c7ed58fc6541f3e9a8590e797466
+      size: 320410
+    - path: params.yaml
+      hash: md5
+      md5: cc6d726ffd631c4c0c49a733eaa6ea44
+      size: 1188
+    - path: src/features_ivf_multi.py
+      hash: md5
+      md5: fa150ddbe988e4d93bf0a9282165e57d
+      size: 4910
+    params:
+      params.yaml:
+        features:
+          lags:
+          - 1
+          - 2
+          - 3
+          - 4
+          rolling_windows:
+          - 2
+          - 4
+          add_quarter_dummies: true
+          add_trend: true
+          train_start_date: '2018-01-01'
+          indicators:
+            aggregation: sum
+            fill_missing: 0
+        ivf_multi.ivf_turistico_total:
+          target: ivf_turistico_total
+    outs:
+    - path: data/features/features_ivf_turistico_total.csv
+      hash: md5
+      md5: 64c2ff89eeaefeb21b0606b7606cfa09
+      size: 15183
+  features_ivf_multi@ivf_turistico_bienes:
+    cmd: python src/features_ivf_multi.py --series ivf_turistico_bienes
+    deps:
+    - path: data/processed/indice_volumen_fisico_inegi_clean.csv
+      hash: md5
+      md5: 9847852b371a8bb8a4525c3e22d1949d
+      size: 5524
+    - path: data/processed/turismo_indicadores_inegi_clean.csv
+      hash: md5
+      md5: 1aa5c7ed58fc6541f3e9a8590e797466
+      size: 320410
+    - path: params.yaml
+      hash: md5
+      md5: cc6d726ffd631c4c0c49a733eaa6ea44
+      size: 1188
+    - path: src/features_ivf_multi.py
+      hash: md5
+      md5: fa150ddbe988e4d93bf0a9282165e57d
+      size: 4910
+    params:
+      params.yaml:
+        features:
+          lags:
+          - 1
+          - 2
+          - 3
+          - 4
+          rolling_windows:
+          - 2
+          - 4
+          add_quarter_dummies: true
+          add_trend: true
+          train_start_date: '2018-01-01'
+          indicators:
+            aggregation: sum
+            fill_missing: 0
+        ivf_multi.ivf_turistico_bienes:
+          target: ivf_turistico_bienes
+    outs:
+    - path: data/features/features_ivf_turistico_bienes.csv
+      hash: md5
+      md5: ce5466fb923d2d40423d19541a8e74b0
+      size: 15278
+  train_ivf_multi@ivf_total_nacional:
+    cmd: python src/train.py --dataset ivf_total_nacional
+    deps:
+    - path: data/features/features_ivf_total_nacional.csv
+      hash: md5
+      md5: 29e1fadb3b92079b0f280b6d3f837767
+      size: 15245
+    - path: params.yaml
+      hash: md5
+      md5: cc6d726ffd631c4c0c49a733eaa6ea44
+      size: 1188
+    - path: src/models/__init__.py
+      hash: md5
+      md5: 6cefb80b2cced4e528de23061ad38059
+      size: 926
+    - path: src/models/xgboost_model.py
+      hash: md5
+      md5: 595832f62a712cff62e62c0c6d4cb073
+      size: 909
+    - path: src/train.py
+      hash: md5
+      md5: caf9a0e5392db049aad6109697a273f7
+      size: 2848
+    params:
+      params.yaml:
+        ivf_multi.ivf_total_nacional:
+          target: ivf_total_nacional
+        model:
+          type: xgboost
+          xgboost:
+            n_estimators: 100
+            max_depth: 3
+            learning_rate: 0.1
+            subsample: 0.8
+            colsample_bytree: 0.8
+            objective: reg:squarederror
+        train:
+          test_size: 0.2
+          random_state: 42
+    outs:
+    - path: models/split_ivf_total_nacional.json
+      hash: md5
+      md5: 1b58d65d561af6eab2fac69123e01bef
+      size: 175
+    - path: models/xgboost_ivf_total_nacional.json
+      hash: md5
+      md5: c0596d25aed457b590f8b17a62cb96d8
+      size: 97624
+  train_ivf_multi@ivf_turistico_total:
+    cmd: python src/train.py --dataset ivf_turistico_total
+    deps:
+    - path: data/features/features_ivf_turistico_total.csv
+      hash: md5
+      md5: 64c2ff89eeaefeb21b0606b7606cfa09
+      size: 15183
+    - path: params.yaml
+      hash: md5
+      md5: cc6d726ffd631c4c0c49a733eaa6ea44
+      size: 1188
+    - path: src/models/__init__.py
+      hash: md5
+      md5: 6cefb80b2cced4e528de23061ad38059
+      size: 926
+    - path: src/models/xgboost_model.py
+      hash: md5
+      md5: 595832f62a712cff62e62c0c6d4cb073
+      size: 909
+    - path: src/train.py
+      hash: md5
+      md5: caf9a0e5392db049aad6109697a273f7
+      size: 2848
+    params:
+      params.yaml:
+        ivf_multi.ivf_turistico_total:
+          target: ivf_turistico_total
+        model:
+          type: xgboost
+          xgboost:
+            n_estimators: 100
+            max_depth: 3
+            learning_rate: 0.1
+            subsample: 0.8
+            colsample_bytree: 0.8
+            objective: reg:squarederror
+        train:
+          test_size: 0.2
+          random_state: 42
+    outs:
+    - path: models/split_ivf_turistico_total.json
+      hash: md5
+      md5: 2f588d75fb0d8666c41e8798be6bfde5
+      size: 176
+    - path: models/xgboost_ivf_turistico_total.json
+      hash: md5
+      md5: 71c08e56c111e25e8dc6b91ccfd85856
+      size: 94923
+  train_ivf_multi@ivf_turistico_bienes:
+    cmd: python src/train.py --dataset ivf_turistico_bienes
+    deps:
+    - path: data/features/features_ivf_turistico_bienes.csv
+      hash: md5
+      md5: ce5466fb923d2d40423d19541a8e74b0
+      size: 15278
+    - path: params.yaml
+      hash: md5
+      md5: cc6d726ffd631c4c0c49a733eaa6ea44
+      size: 1188
+    - path: src/models/__init__.py
+      hash: md5
+      md5: 6cefb80b2cced4e528de23061ad38059
+      size: 926
+    - path: src/models/xgboost_model.py
+      hash: md5
+      md5: 595832f62a712cff62e62c0c6d4cb073
+      size: 909
+    - path: src/train.py
+      hash: md5
+      md5: caf9a0e5392db049aad6109697a273f7
+      size: 2848
+    params:
+      params.yaml:
+        ivf_multi.ivf_turistico_bienes:
+          target: ivf_turistico_bienes
+        model:
+          type: xgboost
+          xgboost:
+            n_estimators: 100
+            max_depth: 3
+            learning_rate: 0.1
+            subsample: 0.8
+            colsample_bytree: 0.8
+            objective: reg:squarederror
+        train:
+          test_size: 0.2
+          random_state: 42
+    outs:
+    - path: models/split_ivf_turistico_bienes.json
+      hash: md5
+      md5: 794fc9827004127e2e47aa5a113a5ada
+      size: 177
+    - path: models/xgboost_ivf_turistico_bienes.json
+      hash: md5
+      md5: dd58377b11e14c8426aa502ec074f4ef
+      size: 96349
+  train_ivf_multi@ivf_turistico_servicios:
+    cmd: python src/train.py --dataset ivf_turistico_servicios
+    deps:
+    - path: data/features/features_ivf_turistico_servicios.csv
+      hash: md5
+      md5: 2d57a379b4aea918dcb1e0affe0b5a13
+      size: 15152
+    - path: params.yaml
+      hash: md5
+      md5: cc6d726ffd631c4c0c49a733eaa6ea44
+      size: 1188
+    - path: src/models/__init__.py
+      hash: md5
+      md5: 6cefb80b2cced4e528de23061ad38059
+      size: 926
+    - path: src/models/xgboost_model.py
+      hash: md5
+      md5: 595832f62a712cff62e62c0c6d4cb073
+      size: 909
+    - path: src/train.py
+      hash: md5
+      md5: caf9a0e5392db049aad6109697a273f7
+      size: 2848
+    params:
+      params.yaml:
+        ivf_multi.ivf_turistico_servicios:
+          target: ivf_turistico_servicios
+        model:
+          type: xgboost
+          xgboost:
+            n_estimators: 100
+            max_depth: 3
+            learning_rate: 0.1
+            subsample: 0.8
+            colsample_bytree: 0.8
+            objective: reg:squarederror
+        train:
+          test_size: 0.2
+          random_state: 42
+    outs:
+    - path: models/split_ivf_turistico_servicios.json
+      hash: md5
+      md5: 7dd2fa7492bb75472440ae21e6e66534
+      size: 180
+    - path: models/xgboost_ivf_turistico_servicios.json
+      hash: md5
+      md5: 58ebc6954a7e894e09a58e1e7069e727
+      size: 91226
+  evaluate_ivf_multi@ivf_total_nacional:
+    cmd: python src/evaluate.py --dataset ivf_total_nacional
+    deps:
+    - path: data/features/features_ivf_total_nacional.csv
+      hash: md5
+      md5: 29e1fadb3b92079b0f280b6d3f837767
+      size: 15245
+    - path: models/split_ivf_total_nacional.json
+      hash: md5
+      md5: 1b58d65d561af6eab2fac69123e01bef
+      size: 175
+    - path: models/xgboost_ivf_total_nacional.json
+      hash: md5
+      md5: c0596d25aed457b590f8b17a62cb96d8
+      size: 97624
+    - path: params.yaml
+      hash: md5
+      md5: cc6d726ffd631c4c0c49a733eaa6ea44
+      size: 1188
+    - path: src/evaluate.py
+      hash: md5
+      md5: 5d4f6339324b9bda1be12d514494eb9a
+      size: 3979
+    - path: src/models/__init__.py
+      hash: md5
+      md5: 6cefb80b2cced4e528de23061ad38059
+      size: 926
+    - path: src/models/xgboost_model.py
+      hash: md5
+      md5: 595832f62a712cff62e62c0c6d4cb073
+      size: 909
+    params:
+      params.yaml:
+        evaluate:
+          forecast_horizon: 8
+        ivf_multi.ivf_total_nacional:
+          target: ivf_total_nacional
+        model.type: xgboost
+    outs:
+    - path: metrics/metrics_ivf_total_nacional.json
+      hash: md5
+      md5: 2c1e94aa2d4cbb241d6334bf094e9d2b
+      size: 93
+    - path: plots/forecast_ivf_total_nacional.png
+      hash: md5
+      md5: 3146aa51636de37a14c64190011cfa67
+      size: 55150
+  evaluate_ivf_multi@ivf_turistico_total:
+    cmd: python src/evaluate.py --dataset ivf_turistico_total
+    deps:
+    - path: data/features/features_ivf_turistico_total.csv
+      hash: md5
+      md5: 64c2ff89eeaefeb21b0606b7606cfa09
+      size: 15183
+    - path: models/split_ivf_turistico_total.json
+      hash: md5
+      md5: 2f588d75fb0d8666c41e8798be6bfde5
+      size: 176
+    - path: models/xgboost_ivf_turistico_total.json
+      hash: md5
+      md5: 71c08e56c111e25e8dc6b91ccfd85856
+      size: 94923
+    - path: params.yaml
+      hash: md5
+      md5: cc6d726ffd631c4c0c49a733eaa6ea44
+      size: 1188
+    - path: src/evaluate.py
+      hash: md5
+      md5: 5d4f6339324b9bda1be12d514494eb9a
+      size: 3979
+    - path: src/models/__init__.py
+      hash: md5
+      md5: 6cefb80b2cced4e528de23061ad38059
+      size: 926
+    - path: src/models/xgboost_model.py
+      hash: md5
+      md5: 595832f62a712cff62e62c0c6d4cb073
+      size: 909
+    params:
+      params.yaml:
+        evaluate:
+          forecast_horizon: 8
+        ivf_multi.ivf_turistico_total:
+          target: ivf_turistico_total
+        model.type: xgboost
+    outs:
+    - path: metrics/metrics_ivf_turistico_total.json
+      hash: md5
+      md5: 8b9b330cc7876acaac4495821922f9c9
+      size: 93
+    - path: plots/forecast_ivf_turistico_total.png
+      hash: md5
+      md5: f248da8d3a69d78baf29bb4deb9fcb62
+      size: 53248
+  evaluate_ivf_multi@ivf_turistico_bienes:
+    cmd: python src/evaluate.py --dataset ivf_turistico_bienes
+    deps:
+    - path: data/features/features_ivf_turistico_bienes.csv
+      hash: md5
+      md5: ce5466fb923d2d40423d19541a8e74b0
+      size: 15278
+    - path: models/split_ivf_turistico_bienes.json
+      hash: md5
+      md5: 794fc9827004127e2e47aa5a113a5ada
+      size: 177
+    - path: models/xgboost_ivf_turistico_bienes.json
+      hash: md5
+      md5: dd58377b11e14c8426aa502ec074f4ef
+      size: 96349
+    - path: params.yaml
+      hash: md5
+      md5: cc6d726ffd631c4c0c49a733eaa6ea44
+      size: 1188
+    - path: src/evaluate.py
+      hash: md5
+      md5: 5d4f6339324b9bda1be12d514494eb9a
+      size: 3979
+    - path: src/models/__init__.py
+      hash: md5
+      md5: 6cefb80b2cced4e528de23061ad38059
+      size: 926
+    - path: src/models/xgboost_model.py
+      hash: md5
+      md5: 595832f62a712cff62e62c0c6d4cb073
+      size: 909
+    params:
+      params.yaml:
+        evaluate:
+          forecast_horizon: 8
+        ivf_multi.ivf_turistico_bienes:
+          target: ivf_turistico_bienes
+        model.type: xgboost
+    outs:
+    - path: metrics/metrics_ivf_turistico_bienes.json
+      hash: md5
+      md5: ac8fdeb31b4f27d40ec280f6bdcd8f7f
+      size: 92
+    - path: plots/forecast_ivf_turistico_bienes.png
+      hash: md5
+      md5: 5211ed5549145cf07a822ce85185361c
+      size: 59944
+  evaluate_ivf_multi@ivf_turistico_servicios:
+    cmd: python src/evaluate.py --dataset ivf_turistico_servicios
+    deps:
+    - path: data/features/features_ivf_turistico_servicios.csv
+      hash: md5
+      md5: 2d57a379b4aea918dcb1e0affe0b5a13
+      size: 15152
+    - path: models/split_ivf_turistico_servicios.json
+      hash: md5
+      md5: 7dd2fa7492bb75472440ae21e6e66534
+      size: 180
+    - path: models/xgboost_ivf_turistico_servicios.json
+      hash: md5
+      md5: 58ebc6954a7e894e09a58e1e7069e727
+      size: 91226
+    - path: params.yaml
+      hash: md5
+      md5: cc6d726ffd631c4c0c49a733eaa6ea44
+      size: 1188
+    - path: src/evaluate.py
+      hash: md5
+      md5: 5d4f6339324b9bda1be12d514494eb9a
+      size: 3979
+    - path: src/models/__init__.py
+      hash: md5
+      md5: 6cefb80b2cced4e528de23061ad38059
+      size: 926
+    - path: src/models/xgboost_model.py
+      hash: md5
+      md5: 595832f62a712cff62e62c0c6d4cb073
+      size: 909
+    params:
+      params.yaml:
+        evaluate:
+          forecast_horizon: 8
+        ivf_multi.ivf_turistico_servicios:
+          target: ivf_turistico_servicios
+        model.type: xgboost
+    outs:
+    - path: metrics/metrics_ivf_turistico_servicios.json
+      hash: md5
+      md5: 84d026c472afd634be11e95d1b447d48
+      size: 94
+    - path: plots/forecast_ivf_turistico_servicios.png
+      hash: md5
+      md5: 1a7a48c6f93240a24f0810a64df4c25a
+      size: 54470
+  interpret_ivf_multi@ivf_total_nacional:
+    cmd: python src/interpret.py --dataset ivf_total_nacional
+    deps:
+    - path: data/features/features_ivf_total_nacional.csv
+      hash: md5
+      md5: 29e1fadb3b92079b0f280b6d3f837767
+      size: 15245
+    - path: data/processed/indice_volumen_fisico_inegi_clean.csv
+      hash: md5
+      md5: 9847852b371a8bb8a4525c3e22d1949d
+      size: 5524
+    - path: models/split_ivf_total_nacional.json
+      hash: md5
+      md5: 1b58d65d561af6eab2fac69123e01bef
+      size: 175
+    - path: models/xgboost_ivf_total_nacional.json
+      hash: md5
+      md5: c0596d25aed457b590f8b17a62cb96d8
+      size: 97624
+    - path: params.yaml
+      hash: md5
+      md5: cc6d726ffd631c4c0c49a733eaa6ea44
+      size: 1188
+    - path: src/interpret.py
+      hash: md5
+      md5: 7d748ee50317ab7120d3808fb2c1c82d
+      size: 4865
+    - path: src/models/__init__.py
+      hash: md5
+      md5: 6cefb80b2cced4e528de23061ad38059
+      size: 926
+    - path: src/models/xgboost_model.py
+      hash: md5
+      md5: 595832f62a712cff62e62c0c6d4cb073
+      size: 909
+    params:
+      params.yaml:
+        interpret:
+          stl_period: 4
+          shap_max_display: 10
+          save_shap_values: true
+        ivf_multi.ivf_total_nacional:
+          target: ivf_total_nacional
+        model.type: xgboost
+    outs:
+    - path: data/shap/feature_names_ivf_total_nacional.json
+      hash: md5
+      md5: 5f43c068c6d1447636b4594a4f4b48c6
+      size: 2343
+    - path: data/shap/shap_values_ivf_total_nacional.npz
+      hash: md5
+      md5: f694bc396cef354eda4c48975e265edc
+      size: 4692
+    - path: plots/shap_ivf_total_nacional.png
+      hash: md5
+      md5: 90d17f2494d73d037163c5deedfb6fff
+      size: 52923
+    - path: plots/stl_ivf_total_nacional.png
+      hash: md5
+      md5: 7fd3567cd12e5296bb7d2a8bfb9f6a03
+      size: 120892
+  interpret_ivf_multi@ivf_turistico_total:
+    cmd: python src/interpret.py --dataset ivf_turistico_total
+    deps:
+    - path: data/features/features_ivf_turistico_total.csv
+      hash: md5
+      md5: 64c2ff89eeaefeb21b0606b7606cfa09
+      size: 15183
+    - path: data/processed/indice_volumen_fisico_inegi_clean.csv
+      hash: md5
+      md5: 9847852b371a8bb8a4525c3e22d1949d
+      size: 5524
+    - path: models/split_ivf_turistico_total.json
+      hash: md5
+      md5: 2f588d75fb0d8666c41e8798be6bfde5
+      size: 176
+    - path: models/xgboost_ivf_turistico_total.json
+      hash: md5
+      md5: 71c08e56c111e25e8dc6b91ccfd85856
+      size: 94923
+    - path: params.yaml
+      hash: md5
+      md5: cc6d726ffd631c4c0c49a733eaa6ea44
+      size: 1188
+    - path: src/interpret.py
+      hash: md5
+      md5: 7d748ee50317ab7120d3808fb2c1c82d
+      size: 4865
+    - path: src/models/__init__.py
+      hash: md5
+      md5: 6cefb80b2cced4e528de23061ad38059
+      size: 926
+    - path: src/models/xgboost_model.py
+      hash: md5
+      md5: 595832f62a712cff62e62c0c6d4cb073
+      size: 909
+    params:
+      params.yaml:
+        interpret:
+          stl_period: 4
+          shap_max_display: 10
+          save_shap_values: true
+        ivf_multi.ivf_turistico_total:
+          target: ivf_turistico_total
+        model.type: xgboost
+    outs:
+    - path: data/shap/feature_names_ivf_turistico_total.json
+      hash: md5
+      md5: 5f43c068c6d1447636b4594a4f4b48c6
+      size: 2343
+    - path: data/shap/shap_values_ivf_turistico_total.npz
+      hash: md5
+      md5: 0279ebf715b750f6ddd8094c3f3c1839
+      size: 4692
+    - path: plots/shap_ivf_turistico_total.png
+      hash: md5
+      md5: d65375ad09053e59e5fff897b5d8d6dc
+      size: 56168
+    - path: plots/stl_ivf_turistico_total.png
+      hash: md5
+      md5: 3bb1b67c0c0481d4d7ba5ba3bc3be3d9
+      size: 119814
+  interpret_ivf_multi@ivf_turistico_bienes:
+    cmd: python src/interpret.py --dataset ivf_turistico_bienes
+    deps:
+    - path: data/features/features_ivf_turistico_bienes.csv
+      hash: md5
+      md5: ce5466fb923d2d40423d19541a8e74b0
+      size: 15278
+    - path: data/processed/indice_volumen_fisico_inegi_clean.csv
+      hash: md5
+      md5: 9847852b371a8bb8a4525c3e22d1949d
+      size: 5524
+    - path: models/split_ivf_turistico_bienes.json
+      hash: md5
+      md5: 794fc9827004127e2e47aa5a113a5ada
+      size: 177
+    - path: models/xgboost_ivf_turistico_bienes.json
+      hash: md5
+      md5: dd58377b11e14c8426aa502ec074f4ef
+      size: 96349
+    - path: params.yaml
+      hash: md5
+      md5: cc6d726ffd631c4c0c49a733eaa6ea44
+      size: 1188
+    - path: src/interpret.py
+      hash: md5
+      md5: 7d748ee50317ab7120d3808fb2c1c82d
+      size: 4865
+    - path: src/models/__init__.py
+      hash: md5
+      md5: 6cefb80b2cced4e528de23061ad38059
+      size: 926
+    - path: src/models/xgboost_model.py
+      hash: md5
+      md5: 595832f62a712cff62e62c0c6d4cb073
+      size: 909
+    params:
+      params.yaml:
+        interpret:
+          stl_period: 4
+          shap_max_display: 10
+          save_shap_values: true
+        ivf_multi.ivf_turistico_bienes:
+          target: ivf_turistico_bienes
+        model.type: xgboost
+    outs:
+    - path: data/shap/feature_names_ivf_turistico_bienes.json
+      hash: md5
+      md5: 5f43c068c6d1447636b4594a4f4b48c6
+      size: 2343
+    - path: data/shap/shap_values_ivf_turistico_bienes.npz
+      hash: md5
+      md5: 459a10924e301f25bf5ddbc3e0ca2699
+      size: 4692
+    - path: plots/shap_ivf_turistico_bienes.png
+      hash: md5
+      md5: 31eea61375d478595c7fec70ef0e990c
+      size: 60368
+    - path: plots/stl_ivf_turistico_bienes.png
+      hash: md5
+      md5: 870339d6f5ad204d3f452bcb82001d8b
+      size: 128430
+  interpret_ivf_multi@ivf_turistico_servicios:
+    cmd: python src/interpret.py --dataset ivf_turistico_servicios
+    deps:
+    - path: data/features/features_ivf_turistico_servicios.csv
+      hash: md5
+      md5: 2d57a379b4aea918dcb1e0affe0b5a13
+      size: 15152
+    - path: data/processed/indice_volumen_fisico_inegi_clean.csv
+      hash: md5
+      md5: 9847852b371a8bb8a4525c3e22d1949d
+      size: 5524
+    - path: models/split_ivf_turistico_servicios.json
+      hash: md5
+      md5: 7dd2fa7492bb75472440ae21e6e66534
+      size: 180
+    - path: models/xgboost_ivf_turistico_servicios.json
+      hash: md5
+      md5: 58ebc6954a7e894e09a58e1e7069e727
+      size: 91226
+    - path: params.yaml
+      hash: md5
+      md5: cc6d726ffd631c4c0c49a733eaa6ea44
+      size: 1188
+    - path: src/interpret.py
+      hash: md5
+      md5: 7d748ee50317ab7120d3808fb2c1c82d
+      size: 4865
+    - path: src/models/__init__.py
+      hash: md5
+      md5: 6cefb80b2cced4e528de23061ad38059
+      size: 926
+    - path: src/models/xgboost_model.py
+      hash: md5
+      md5: 595832f62a712cff62e62c0c6d4cb073
+      size: 909
+    params:
+      params.yaml:
+        interpret:
+          stl_period: 4
+          shap_max_display: 10
+          save_shap_values: true
+        ivf_multi.ivf_turistico_servicios:
+          target: ivf_turistico_servicios
+        model.type: xgboost
+    outs:
+    - path: data/shap/feature_names_ivf_turistico_servicios.json
+      hash: md5
+      md5: 5f43c068c6d1447636b4594a4f4b48c6
+      size: 2343
+    - path: data/shap/shap_values_ivf_turistico_servicios.npz
+      hash: md5
+      md5: 1039705896d70fa9faedcd67a2e5a6f2
+      size: 4692
+    - path: plots/shap_ivf_turistico_servicios.png
+      hash: md5
+      md5: 5b2f89c09db10e2a55abd7195d1052ca
+      size: 58525
+    - path: plots/stl_ivf_turistico_servicios.png
+      hash: md5
+      md5: 1a515b3f10dcc4f918aa186c189faf5d
+      size: 116276
+  forecast_ivf_multi@ivf_turistico_servicios:
+    cmd: python src/forecast.py --series ivf_turistico_servicios
+    deps:
+    - path: data/features/features_ivf_turistico_servicios.csv
+      hash: md5
+      md5: 2c7b38a8e3f49f3f9b3c9f2ac04fdf3c
+      size: 34928
+    - path: data/processed/turismo_indicadores_inegi_clean.csv
+      hash: md5
+      md5: 1aa5c7ed58fc6541f3e9a8590e797466
+      size: 320410
+    - path: models/split_ivf_turistico_servicios.json
+      hash: md5
+      md5: df5e30cb191e03f184be4b0f2fff721d
+      size: 182
+    - path: models/xgboost_ivf_turistico_servicios.json
+      hash: md5
+      md5: cc1874141bece7e9c746a13a66730c75
+      size: 106344
+    - path: params.yaml
+      hash: md5
+      md5: 6ac522723f33fedbb282420bc08f70a5
+      size: 1020
+    - path: src/forecast.py
+      hash: md5
+      md5: 6e1a8731de9edc150e8a6f318859f24f
+      size: 8863
+    params:
+      params.yaml:
+        features:
+          lags:
+          - 1
+          - 2
+          - 3
+          - 4
+          rolling_windows:
+          - 2
+          - 4
+          add_quarter_dummies: true
+          add_trend: true
+          indicators:
+            aggregation: sum
+            fill_missing: 0
+        forecast:
+          horizon: 5
+          future_indicator_method: same_quarter_prior_year
+        ivf_multi.ivf_turistico_servicios:
+          target: ivf_turistico_servicios
+    outs:
+    - path: data/forecasts/forecast_ivf_turistico_servicios.csv
+      hash: md5
+      md5: 18e127255c16fbfd4a76487f71f85904
+      size: 500
+    - path: plots/forecast_future_ivf_turistico_servicios.png
+      hash: md5
+      md5: f875d30be8446033b7d91ac77d5176f0
+      size: 110186
+  forecast_ivf_multi@ivf_turistico_bienes:
+    cmd: python src/forecast.py --series ivf_turistico_bienes
+    deps:
+    - path: data/features/features_ivf_turistico_bienes.csv
+      hash: md5
+      md5: 03cc859696bce6ce47a42d92e695c88c
+      size: 35738
+    - path: data/processed/turismo_indicadores_inegi_clean.csv
+      hash: md5
+      md5: 1aa5c7ed58fc6541f3e9a8590e797466
+      size: 320410
+    - path: models/split_ivf_turistico_bienes.json
+      hash: md5
+      md5: a63a6788b4bb74fd84d06989f9595ba5
+      size: 179
+    - path: models/xgboost_ivf_turistico_bienes.json
+      hash: md5
+      md5: 6b0fa7dd5856f2779cc7c7f58592b258
+      size: 107478
+    - path: params.yaml
+      hash: md5
+      md5: 6ac522723f33fedbb282420bc08f70a5
+      size: 1020
+    - path: src/forecast.py
+      hash: md5
+      md5: 6e1a8731de9edc150e8a6f318859f24f
+      size: 8863
+    params:
+      params.yaml:
+        features:
+          lags:
+          - 1
+          - 2
+          - 3
+          - 4
+          rolling_windows:
+          - 2
+          - 4
+          add_quarter_dummies: true
+          add_trend: true
+          indicators:
+            aggregation: sum
+            fill_missing: 0
+        forecast:
+          horizon: 5
+          future_indicator_method: same_quarter_prior_year
+        ivf_multi.ivf_turistico_bienes:
+          target: ivf_turistico_bienes
+    outs:
+    - path: data/forecasts/forecast_ivf_turistico_bienes.csv
+      hash: md5
+      md5: 6cb9335aaaa2c49b4772eb2b047b8b5a
+      size: 485
+    - path: plots/forecast_future_ivf_turistico_bienes.png
+      hash: md5
+      md5: 2ebae0d8272a3c6999b67bfd539a5435
+      size: 120157
+  forecast_ivf_multi@ivf_turistico_total:
+    cmd: python src/forecast.py --series ivf_turistico_total
+    deps:
+    - path: data/features/features_ivf_turistico_total.csv
+      hash: md5
+      md5: 1a7b39b29d45e796c744950895e8ab85
+      size: 35026
+    - path: data/processed/turismo_indicadores_inegi_clean.csv
+      hash: md5
+      md5: 1aa5c7ed58fc6541f3e9a8590e797466
+      size: 320410
+    - path: models/split_ivf_turistico_total.json
+      hash: md5
+      md5: 2a7cd342eda6bf028548b8b3f632437a
+      size: 178
+    - path: models/xgboost_ivf_turistico_total.json
+      hash: md5
+      md5: 18ee41f883d817cc1bdaf78995f5afcf
+      size: 108290
+    - path: params.yaml
+      hash: md5
+      md5: 6ac522723f33fedbb282420bc08f70a5
+      size: 1020
+    - path: src/forecast.py
+      hash: md5
+      md5: 6e1a8731de9edc150e8a6f318859f24f
+      size: 8863
+    params:
+      params.yaml:
+        features:
+          lags:
+          - 1
+          - 2
+          - 3
+          - 4
+          rolling_windows:
+          - 2
+          - 4
+          add_quarter_dummies: true
+          add_trend: true
+          indicators:
+            aggregation: sum
+            fill_missing: 0
+        forecast:
+          horizon: 5
+          future_indicator_method: same_quarter_prior_year
+        ivf_multi.ivf_turistico_total:
+          target: ivf_turistico_total
+    outs:
+    - path: data/forecasts/forecast_ivf_turistico_total.csv
+      hash: md5
+      md5: 5d03c9cae613196a060346d9e3cbfa2c
+      size: 484
+    - path: plots/forecast_future_ivf_turistico_total.png
+      hash: md5
+      md5: a1a32f61147bbeea4a40e2d07170423e
+      size: 114202
+  forecast_ivf_multi@ivf_total_nacional:
+    cmd: python src/forecast.py --series ivf_total_nacional
+    deps:
+    - path: data/features/features_ivf_total_nacional.csv
+      hash: md5
+      md5: 414a2caf33a107f9430c78568de5e6cf
+      size: 35413
+    - path: data/processed/turismo_indicadores_inegi_clean.csv
+      hash: md5
+      md5: 1aa5c7ed58fc6541f3e9a8590e797466
+      size: 320410
+    - path: models/split_ivf_total_nacional.json
+      hash: md5
+      md5: 6e205d154f65d7a2626a7598229e92ec
+      size: 177
+    - path: models/xgboost_ivf_total_nacional.json
+      hash: md5
+      md5: d78765b8fac7f3e8812157c0ff666c0d
+      size: 105354
+    - path: params.yaml
+      hash: md5
+      md5: 6ac522723f33fedbb282420bc08f70a5
+      size: 1020
+    - path: src/forecast.py
+      hash: md5
+      md5: 6e1a8731de9edc150e8a6f318859f24f
+      size: 8863
+    params:
+      params.yaml:
+        features:
+          lags:
+          - 1
+          - 2
+          - 3
+          - 4
+          rolling_windows:
+          - 2
+          - 4
+          add_quarter_dummies: true
+          add_trend: true
+          indicators:
+            aggregation: sum
+            fill_missing: 0
+        forecast:
+          horizon: 5
+          future_indicator_method: same_quarter_prior_year
+        ivf_multi.ivf_total_nacional:
+          target: ivf_total_nacional
+    outs:
+    - path: data/forecasts/forecast_ivf_total_nacional.csv
+      hash: md5
+      md5: 4e2f582c785e2c4680480479fcaa0478
+      size: 479
+    - path: plots/forecast_future_ivf_total_nacional.png
+      hash: md5
+      md5: 646e1de47f5a3d45c29184aec068b78d
+      size: 107116
+  compare_shap:
+    cmd: python src/compare_shap.py
+    deps:
+    - path: data/shap/feature_names_ivf_total_nacional.json
+      hash: md5
+      md5: 5f43c068c6d1447636b4594a4f4b48c6
+      size: 2343
+    - path: data/shap/feature_names_ivf_turistico_bienes.json
+      hash: md5
+      md5: 5f43c068c6d1447636b4594a4f4b48c6
+      size: 2343
+    - path: data/shap/feature_names_ivf_turistico_servicios.json
+      hash: md5
+      md5: 5f43c068c6d1447636b4594a4f4b48c6
+      size: 2343
+    - path: data/shap/feature_names_ivf_turistico_total.json
+      hash: md5
+      md5: 5f43c068c6d1447636b4594a4f4b48c6
+      size: 2343
+    - path: data/shap/shap_values_ivf_total_nacional.npz
+      hash: md5
+      md5: f694bc396cef354eda4c48975e265edc
+      size: 4692
+    - path: data/shap/shap_values_ivf_turistico_bienes.npz
+      hash: md5
+      md5: 459a10924e301f25bf5ddbc3e0ca2699
+      size: 4692
+    - path: data/shap/shap_values_ivf_turistico_servicios.npz
+      hash: md5
+      md5: 1039705896d70fa9faedcd67a2e5a6f2
+      size: 4692
+    - path: data/shap/shap_values_ivf_turistico_total.npz
+      hash: md5
+      md5: 0279ebf715b750f6ddd8094c3f3c1839
+      size: 4692
+    - path: params.yaml
+      hash: md5
+      md5: cc6d726ffd631c4c0c49a733eaa6ea44
+      size: 1188
+    - path: src/compare_shap.py
+      hash: md5
+      md5: 41b276c0942db5e737ee54c1611f2189
+      size: 4343
+    outs:
+    - path: data/shap/indicator_importance_summary.csv
+      hash: md5
+      md5: e22e426ae5d8edb8c6ef9bd14442ed9b
+      size: 3455
+    - path: plots/shap_compare_indicators.png
+      hash: md5
+      md5: a1f5533437588493eec64fad3cbeb7cd
+      size: 570476

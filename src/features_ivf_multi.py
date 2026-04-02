@@ -1,0 +1,133 @@
+"""
+Construcción de matriz de características para forecast multiserie IVF con indicadores externos.
+
+Para cada una de las 4 series IVF combina:
+  - Features autorregresivas: rezagos, medias móviles, dummies de trimestre, tendencia.
+  - Indicadores de turismo INEGI: num_visitantes, gasto_total, gasto_medio agregados a
+    frecuencia trimestral (suma). Pre-2018 se rellena con ceros.
+
+Uso:
+    python src/features_ivf_multi.py --series ivf_total_nacional
+    python src/features_ivf_multi.py --series ivf_turistico_total
+    python src/features_ivf_multi.py --series ivf_turistico_bienes
+    python src/features_ivf_multi.py --series ivf_turistico_servicios
+"""
+
+import argparse
+import unicodedata
+
+import pandas as pd
+import yaml
+
+SERIES_VALIDAS = [
+    "ivf_total_nacional",
+    "ivf_turistico_total",
+    "ivf_turistico_bienes",
+    "ivf_turistico_servicios",
+]
+
+IVF_PATH = "data/processed/indice_volumen_fisico_inegi_clean.csv"
+IND_PATH = "data/processed/turismo_indicadores_inegi_clean.csv"
+
+
+def normalizar_col(s: str) -> str:
+    """Convierte nombre a identificador ASCII seguro."""
+    s = unicodedata.normalize("NFD", s)
+    s = s.encode("ascii", "ignore").decode("utf-8")
+    return s.replace(" ", "_").replace(".", "").replace(",", "").replace("-", "_").lower()
+
+
+def build_features(series: str) -> None:
+    with open("params.yaml") as f:
+        params = yaml.safe_load(f)
+
+    target_col = params["ivf_multi"][series]["target"]
+    feat_params = params["features"]
+    fill_val = feat_params.get("indicators", {}).get("fill_missing", 0)
+
+    # --- 1. Cargar IVF y construir features autorregresivas ---
+    df = pd.read_csv(IVF_PATH, parse_dates=["date"])
+    df = df.set_index("date").sort_index()
+
+    serie = df[target_col].copy()
+
+    features = pd.DataFrame(index=serie.index)
+    features[target_col] = serie
+
+    # Rezagos
+    for lag in feat_params["lags"]:
+        features[f"lag_{lag}"] = serie.shift(lag)
+
+    # Medias móviles (shift(1) para evitar fuga de datos)
+    for window in feat_params["rolling_windows"]:
+        features[f"roll_mean_{window}"] = serie.shift(1).rolling(window).mean()
+
+    # Dummies de trimestre (q1 es categoría de referencia, se omite)
+    if feat_params["add_quarter_dummies"]:
+        quarter = serie.index.quarter
+        for q in [2, 3, 4]:
+            features[f"q{q}"] = (quarter == q).astype(int)
+
+    # Tendencia lineal
+    if feat_params["add_trend"]:
+        features["trend"] = range(len(features))
+
+    # Eliminar NaN por rezagos/rolling
+    features = features.dropna()
+
+    # Recorte temporal: si train_start_date está definido, se descarta todo lo anterior
+    train_start = feat_params.get("train_start_date")
+    if train_start:
+        features = features[features.index >= pd.Timestamp(train_start)]
+        print(f"  Recorte temporal activo: desde {train_start} ({len(features)} trimestres)")
+
+    # --- 2. Cargar y agregar indicadores a frecuencia trimestral ---
+    df_ind = pd.read_csv(IND_PATH, parse_dates=["fecha"])
+    # Eliminar filas con NaN en columnas de dimensión o valor
+    df_ind = df_ind.dropna(subset=["variable", "tipo", "movilidad", "flujo", "valor"])
+
+    # Nombre de combinación normalizado para cada serie indicador
+    df_ind["combo"] = (
+        df_ind["variable"].apply(normalizar_col)
+        + "__"
+        + df_ind["tipo"].apply(normalizar_col)
+        + "__"
+        + df_ind["movilidad"].apply(normalizar_col)
+        + "__"
+        + df_ind["flujo"].apply(normalizar_col)
+    )
+
+    # Pivot a ancho: filas = mes, columnas = combinación
+    df_pivot = df_ind.pivot_table(
+        index="fecha", columns="combo", values="valor", aggfunc="sum"
+    )
+    df_pivot.index = pd.to_datetime(df_pivot.index)
+
+    # Agregar a trimestral (inicio de trimestre, referencia enero)
+    df_q = df_pivot.resample("QS").sum()
+
+    # --- 3. Merge izquierdo: conserva todos los trimestres IVF ---
+    features = features.merge(df_q, left_index=True, right_index=True, how="left")
+
+    # Rellenar NaN (trimestres pre-2018 y combinaciones faltantes) con fill_val
+    ind_cols = list(df_q.columns)
+    features[ind_cols] = features[ind_cols].fillna(fill_val)
+
+    # --- 4. Guardar ---
+    out_path = f"data/features/features_{series}.csv"
+    features.reset_index().to_csv(out_path, index=False)
+    print(
+        f"Características guardadas en: {out_path} "
+        f"({len(features)} filas, {features.shape[1]} columnas)"
+    )
+    print(f"  Features autorregresivas: {features.shape[1] - len(ind_cols) - 1}")
+    print(f"  Columnas de indicadores:  {len(ind_cols)}")
+    n_con_ind = (features[ind_cols].sum(axis=1) != 0).sum()
+    print(f"  Trimestres con indicadores reales: {n_con_ind} / {len(features)}")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--series", choices=SERIES_VALIDAS, required=True)
+    args = parser.parse_args()
+    build_features(args.series)

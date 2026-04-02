@@ -31,12 +31,26 @@ DATASET_CONFIG = {
 }
 
 
+def resolver_dataset(dataset: str, params: dict) -> tuple:
+    """Devuelve (cfg, target_col) para datasets legacy o ivf_multi."""
+    if dataset in DATASET_CONFIG:
+        cfg = DATASET_CONFIG[dataset]
+        target_col = params["target"][cfg["target_key"]]
+        return cfg, target_col
+    # Serie ivf_multi: deriva rutas por convención de nombres
+    target_col = params["ivf_multi"][dataset]["target"]
+    cfg = {
+        "features": f"data/features/features_{dataset}.csv",
+        "split_out": f"models/split_{dataset}.json",
+    }
+    return cfg, target_col
+
+
 def train(dataset: str) -> None:
     with open("params.yaml") as f:
         params = yaml.safe_load(f)
 
-    cfg = DATASET_CONFIG[dataset]
-    target_col = params["target"][cfg["target_key"]]
+    cfg, target_col = resolver_dataset(dataset, params)
     model_type = params["model"]["type"]
     model_params = params["model"][model_type]
     test_size = params["train"]["test_size"]
@@ -75,6 +89,6 @@ def train(dataset: str) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", choices=["consumo", "ivf"], required=True)
+    parser.add_argument("--dataset", required=True)
     args = parser.parse_args()
     train(args.dataset)

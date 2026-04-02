@@ -38,12 +38,27 @@ DATASET_CONFIG = {
 }
 
 
+def resolver_dataset(dataset: str, params: dict) -> tuple:
+    """Devuelve (cfg, target_col) para datasets legacy o ivf_multi."""
+    if dataset in DATASET_CONFIG:
+        cfg = DATASET_CONFIG[dataset]
+        target_col = params["target"][cfg["target_key"]]
+        return cfg, target_col
+    target_col = params["ivf_multi"][dataset]["target"]
+    cfg = {
+        "features": f"data/features/features_{dataset}.csv",
+        "split_meta": f"models/split_{dataset}.json",
+        "metrics_out": f"metrics/metrics_{dataset}.json",
+        "plot_out": f"plots/forecast_{dataset}.png",
+    }
+    return cfg, target_col
+
+
 def evaluate(dataset: str) -> None:
     with open("params.yaml") as f:
         params = yaml.safe_load(f)
 
-    cfg = DATASET_CONFIG[dataset]
-    target_col = params["target"][cfg["target_key"]]
+    cfg, target_col = resolver_dataset(dataset, params)
     model_type = params["model"]["type"]
 
     with open(cfg["split_meta"]) as f:
@@ -103,6 +118,6 @@ def evaluate(dataset: str) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", choices=["consumo", "ivf"], required=True)
+    parser.add_argument("--dataset", required=True)
     args = parser.parse_args()
     evaluate(args.dataset)

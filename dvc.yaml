@@ -184,3 +184,153 @@ stages:
           cache: false
       - plots/stl_ivf.png:
           cache: false
+
+  # ── Nuevas series IVF con indicadores externos ──────────────────────────────
+
+  features_ivf_multi:
+    foreach:
+      - ivf_total_nacional
+      - ivf_turistico_total
+      - ivf_turistico_bienes
+      - ivf_turistico_servicios
+    do:
+      cmd: python src/features_ivf_multi.py --series ${item}
+      deps:
+        - src/features_ivf_multi.py
+        - data/processed/indice_volumen_fisico_inegi_clean.csv
+        - data/processed/turismo_indicadores_inegi_clean.csv
+        - params.yaml
+      params:
+        - features
+        - ivf_multi.${item}
+      outs:
+        - data/features/features_${item}.csv:
+            cache: false
+
+  train_ivf_multi:
+    foreach:
+      - ivf_total_nacional
+      - ivf_turistico_total
+      - ivf_turistico_bienes
+      - ivf_turistico_servicios
+    do:
+      cmd: python src/train.py --dataset ${item}
+      deps:
+        - src/train.py
+        - src/models/__init__.py
+        - src/models/xgboost_model.py
+        - data/features/features_${item}.csv
+        - params.yaml
+      params:
+        - ivf_multi.${item}
+        - model
+        - train
+      outs:
+        - models/split_${item}.json:
+            cache: false
+        - models/xgboost_${item}.json:
+            cache: false
+
+  evaluate_ivf_multi:
+    foreach:
+      - ivf_total_nacional
+      - ivf_turistico_total
+      - ivf_turistico_bienes
+      - ivf_turistico_servicios
+    do:
+      cmd: python src/evaluate.py --dataset ${item}
+      deps:
+        - src/evaluate.py
+        - src/models/__init__.py
+        - src/models/xgboost_model.py
+        - data/features/features_${item}.csv
+        - models/xgboost_${item}.json
+        - models/split_${item}.json
+        - params.yaml
+      params:
+        - ivf_multi.${item}
+        - model.type
+        - evaluate
+      metrics:
+        - metrics/metrics_${item}.json:
+            cache: false
+      plots:
+        - plots/forecast_${item}.png:
+            cache: false
+
+  interpret_ivf_multi:
+    foreach:
+      - ivf_total_nacional
+      - ivf_turistico_total
+      - ivf_turistico_bienes
+      - ivf_turistico_servicios
+    do:
+      cmd: python src/interpret.py --dataset ${item}
+      deps:
+        - src/interpret.py
+        - src/models/__init__.py
+        - src/models/xgboost_model.py
+        - data/features/features_${item}.csv
+        - data/processed/indice_volumen_fisico_inegi_clean.csv
+        - models/xgboost_${item}.json
+        - models/split_${item}.json
+        - params.yaml
+      params:
+        - ivf_multi.${item}
+        - model.type
+        - interpret
+      plots:
+        - plots/shap_${item}.png:
+            cache: false
+        - plots/stl_${item}.png:
+            cache: false
+      outs:
+        - data/shap/shap_values_${item}.npz:
+            cache: false
+        - data/shap/feature_names_${item}.json:
+            cache: false
+
+  forecast_ivf_multi:
+    foreach:
+      - ivf_total_nacional
+      - ivf_turistico_total
+      - ivf_turistico_bienes
+      - ivf_turistico_servicios
+    do:
+      cmd: python src/forecast.py --series ${item}
+      deps:
+        - src/forecast.py
+        - data/features/features_${item}.csv
+        - models/xgboost_${item}.json
+        - models/split_${item}.json
+        - data/processed/turismo_indicadores_inegi_clean.csv
+        - params.yaml
+      params:
+        - ivf_multi.${item}
+        - forecast
+        - features
+      outs:
+        - data/forecasts/forecast_${item}.csv:
+            cache: false
+        - plots/forecast_future_${item}.png:
+            cache: false
+
+  compare_shap:
+    cmd: python src/compare_shap.py
+    deps:
+      - src/compare_shap.py
+      - data/shap/shap_values_ivf_total_nacional.npz
+      - data/shap/shap_values_ivf_turistico_total.npz
+      - data/shap/shap_values_ivf_turistico_bienes.npz
+      - data/shap/shap_values_ivf_turistico_servicios.npz
+      - data/shap/feature_names_ivf_total_nacional.json
+      - data/shap/feature_names_ivf_turistico_total.json
+      - data/shap/feature_names_ivf_turistico_bienes.json
+      - data/shap/feature_names_ivf_turistico_servicios.json
+      - params.yaml
+    plots:
+      - plots/shap_compare_indicators.png:
+          cache: false
+    outs:
+      - data/shap/indicator_importance_summary.csv:
+          cache: false
