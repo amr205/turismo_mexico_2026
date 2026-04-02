@@ -28,6 +28,7 @@ SERIES_VALIDAS = [
 
 IVF_PATH = "data/processed/indice_volumen_fisico_inegi_clean.csv"
 IND_PATH = "data/processed/turismo_indicadores_inegi_clean.csv"
+BACKCASTED_PATH = "data/processed/indicadores_backcasted.csv"
 
 
 def normalizar_col(s: str) -> str:
@@ -81,36 +82,15 @@ def build_features(series: str) -> None:
         features = features[features.index >= pd.Timestamp(train_start)]
         print(f"  Recorte temporal activo: desde {train_start} ({len(features)} trimestres)")
 
-    # --- 2. Cargar y agregar indicadores a frecuencia trimestral ---
-    df_ind = pd.read_csv(IND_PATH, parse_dates=["fecha"])
-    # Eliminar filas con NaN en columnas de dimensión o valor
-    df_ind = df_ind.dropna(subset=["variable", "tipo", "movilidad", "flujo", "valor"])
-
-    # Nombre de combinación normalizado para cada serie indicador
-    df_ind["combo"] = (
-        df_ind["variable"].apply(normalizar_col)
-        + "__"
-        + df_ind["tipo"].apply(normalizar_col)
-        + "__"
-        + df_ind["movilidad"].apply(normalizar_col)
-        + "__"
-        + df_ind["flujo"].apply(normalizar_col)
-    )
-
-    # Pivot a ancho: filas = mes, columnas = combinación
-    df_pivot = df_ind.pivot_table(
-        index="fecha", columns="combo", values="valor", aggfunc="sum"
-    )
-    df_pivot.index = pd.to_datetime(df_pivot.index)
-
-    # Agregar a trimestral (inicio de trimestre, referencia enero)
-    df_q = df_pivot.resample("QS").sum()
+    # --- 2. Cargar indicadores pre-procesados (con backfill aplicado por backcast_indicadores) ---
+    df_ind = pd.read_csv(BACKCASTED_PATH, parse_dates=["date"])
+    df_ind = df_ind.set_index("date").sort_index()
 
     # --- 3. Merge izquierdo: conserva todos los trimestres IVF ---
-    features = features.merge(df_q, left_index=True, right_index=True, how="left")
+    features = features.merge(df_ind, left_index=True, right_index=True, how="left")
 
-    # Rellenar NaN (trimestres pre-2018 y combinaciones faltantes) con fill_val
-    ind_cols = list(df_q.columns)
+    # Rellenar NaN residuales (combinaciones faltantes por mezcla de índices)
+    ind_cols = list(df_ind.columns)
     features[ind_cols] = features[ind_cols].fillna(fill_val)
 
     # --- 4. Guardar ---

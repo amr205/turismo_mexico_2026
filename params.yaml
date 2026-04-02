@@ -7,10 +7,17 @@ features:
   rolling_windows: [2, 4]
   add_quarter_dummies: true
   add_trend: true
-  train_start_date: "2018-01-01"   # null = toda la historia disponible; "2018-01-01" = solo desde indicadores
+  train_start_date: null   # null = toda la historia disponible; "2018-01-01" = solo desde indicadores
   indicators:
     aggregation: sum
     fill_missing: 0
+    # Métodos de backfill para trimestres pre-2018:
+    #   zero            → ceros (baseline, ruptura estructural artificial)
+    #   seasonal_mean   → media del mismo trimestre 2018-2025
+    #   seasonal_naive  → valor del mismo trimestre del año más próximo
+    #   linear          → regresión lineal por indicador, extrapolada hacia atrás
+    #   xgboost_backcast→ XGBoost entrenado sobre serie invertida
+    backfill_method: "xgboost_backcast"
 
 model:
   type: xgboost

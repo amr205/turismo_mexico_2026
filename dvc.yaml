@@ -187,6 +187,19 @@ stages:
 
   # ── Nuevas series IVF con indicadores externos ──────────────────────────────
 
+  backcast_indicadores:
+    cmd: python src/backcast_indicadores.py
+    deps:
+      - src/backcast_indicadores.py
+      - data/processed/turismo_indicadores_inegi_clean.csv
+      - data/processed/indice_volumen_fisico_inegi_clean.csv
+      - params.yaml
+    params:
+      - features.indicators
+    outs:
+      - data/processed/indicadores_backcasted.csv:
+          cache: false
+
   features_ivf_multi:
     foreach:
       - ivf_total_nacional
@@ -198,7 +211,7 @@ stages:
       deps:
         - src/features_ivf_multi.py
         - data/processed/indice_volumen_fisico_inegi_clean.csv
-        - data/processed/turismo_indicadores_inegi_clean.csv
+        - data/processed/indicadores_backcasted.csv
         - params.yaml
       params:
         - features
@@ -303,7 +316,7 @@ stages:
         - data/features/features_${item}.csv
         - models/xgboost_${item}.json
         - models/split_${item}.json
-        - data/processed/turismo_indicadores_inegi_clean.csv
+        - data/processed/indicadores_backcasted.csv
         - params.yaml
       params:
         - ivf_multi.${item}

@@ -32,34 +32,13 @@ SERIES_VALIDAS = [
 ]
 
 IVF_PATH = "data/processed/indice_volumen_fisico_inegi_clean.csv"
-IND_PATH = "data/processed/turismo_indicadores_inegi_clean.csv"
-
-
-def normalizar_col(s: str) -> str:
-    s = unicodedata.normalize("NFD", s)
-    s = s.encode("ascii", "ignore").decode("utf-8")
-    return s.replace(" ", "_").replace(".", "").replace(",", "").replace("-", "_").lower()
+BACKCASTED_PATH = "data/processed/indicadores_backcasted.csv"
 
 
 def cargar_indicadores_trimestrales() -> pd.DataFrame:
-    """Carga turismo_indicadores y los agrega a frecuencia trimestral (suma)."""
-    df_ind = pd.read_csv(IND_PATH, parse_dates=["fecha"])
-    df_ind = df_ind.dropna(subset=["variable", "tipo", "movilidad", "flujo", "valor"])
-    df_ind["combo"] = (
-        df_ind["variable"].apply(normalizar_col)
-        + "__"
-        + df_ind["tipo"].apply(normalizar_col)
-        + "__"
-        + df_ind["movilidad"].apply(normalizar_col)
-        + "__"
-        + df_ind["flujo"].apply(normalizar_col)
-    )
-    df_pivot = df_ind.pivot_table(
-        index="fecha", columns="combo", values="valor", aggfunc="sum"
-    )
-    df_pivot.index = pd.to_datetime(df_pivot.index)
-    df_q = df_pivot.resample("QS").sum()
-    return df_q
+    """Carga el archivo de indicadores con backfill ya aplicado."""
+    df = pd.read_csv(BACKCASTED_PATH, parse_dates=["date"])
+    return df.set_index("date").sort_index()
 
 
 def extender_indicadores(df_q: pd.DataFrame, ultima_fecha: pd.Timestamp, horizon: int, metodo: str) -> pd.DataFrame:

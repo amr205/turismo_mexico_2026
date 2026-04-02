@@ -1,8 +1,8 @@
 {
-  "n_train": 24,
-  "n_test": 7,
-  "train_end_date": "2023-10-01",
-  "test_start_date": "2024-01-01",
+  "n_train": 101,
+  "n_test": 26,
+  "train_end_date": "2019-01-01",
+  "test_start_date": "2019-04-01",
   "model_type": "xgboost",
   "target_col": "ivf_turistico_servicios"
 }
