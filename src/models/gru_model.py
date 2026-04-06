@@ -152,10 +152,18 @@ class GRUForecaster(BaseForecaster):
         X_t = torch.from_numpy(X_wins)
 
         self.model.eval()
-        explainer = shap.GradientExplainer(self.model, X_t)
+
+        class _Wrap(torch.nn.Module):
+            def __init__(self, m): super().__init__(); self.m = m
+            def forward(self, x): return self.m(x).unsqueeze(-1)
+
+        explainer = shap.GradientExplainer(_Wrap(self.model), X_t)
         shap_values = explainer.shap_values(X_t)
         if isinstance(shap_values, list):
             shap_values = shap_values[0]
         shap_values = np.array(shap_values)
+        # GradientExplainer devuelve (n, seq_len, n_features, 1) con wrapper → eliminar última dim
+        if shap_values.ndim == 4 and shap_values.shape[-1] == 1:
+            shap_values = shap_values[..., 0]
         # Promediar sobre la dimensión de secuencia: (n, seq_len, n_features) → (n, n_features)
         return shap_values.mean(axis=1)

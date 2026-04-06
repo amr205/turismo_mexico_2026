@@ -41,8 +41,8 @@ stages:
       size: 35811
     - path: src/clean_turismo_indicadores.py
       hash: md5
-      md5: 6d763abe895bb3757ef7a483616bb715
-      size: 2918
+      md5: 2ecf01bf85ab61b96b71dd069ebfaae1
+      size: 2812
     outs:
     - path: data/processed/turismo_indicadores_inegi_clean.csv
       hash: md5
@@ -61,8 +61,8 @@ stages:
       size: 5524
     - path: src/plot_timeseries.py
       hash: md5
-      md5: cb741e094868ec2b05c8ece5bf7b5407
-      size: 1276
+      md5: bd386067b6be163816978274ff580d54
+      size: 1225
     outs:
     - path: plots/consumo_turistico.png
       hash: md5
@@ -81,12 +81,12 @@ stages:
       size: 5460
     - path: params.yaml
       hash: md5
-      md5: 9b948a99e974074602e1c9e8fef757b7
-      size: 615
+      md5: f2204c286b71f4383497578b81817b35
+      size: 2647
     - path: src/features.py
       hash: md5
-      md5: 42c9c42d18a7c693f378e7f55d161d5e
-      size: 2174
+      md5: 76631e9f087e31617e1c037b8e93874f
+      size: 2452
     params:
       params.yaml:
         features:
@@ -100,12 +100,18 @@ stages:
           - 4
           add_quarter_dummies: true
           add_trend: true
+          covid_dummy: true
+          train_start_date:
+          indicators:
+            aggregation: sum
+            fill_missing: 0
+            backfill_method: zero
         target.consumo: consumo_turistico_interior_total
     outs:
     - path: data/features/features_consumo.csv
       hash: md5
-      md5: 4c4ae4ca0443893b8430df8369f9bedb
-      size: 8003
+      md5: 5aeae224aa1ac59a7d5617f6a56c72af
+      size: 8263
   features_ivf:
     cmd: python src/features.py --dataset ivf
     deps:
@@ -115,12 +121,12 @@ stages:
       size: 5524
     - path: params.yaml
       hash: md5
-      md5: 9b948a99e974074602e1c9e8fef757b7
-      size: 615
+      md5: f2204c286b71f4383497578b81817b35
+      size: 2647
     - path: src/features.py
       hash: md5
-      md5: 42c9c42d18a7c693f378e7f55d161d5e
-      size: 2174
+      md5: 76631e9f087e31617e1c037b8e93874f
+      size: 2452
     params:
       params.yaml:
         features:
@@ -134,39 +140,61 @@ stages:
           - 4
           add_quarter_dummies: true
           add_trend: true
+          covid_dummy: true
+          train_start_date:
+          indicators:
+            aggregation: sum
+            fill_missing: 0
+            backfill_method: zero
         target.ivf: ivf_turistico_total
     outs:
     - path: data/features/features_ivf.csv
       hash: md5
-      md5: 8f403d4b9898470374032d53c676aeea
-      size: 8200
+      md5: f5f0bde0112984102ee132833222e05b
+      size: 8460
   train_consumo:
     cmd: python src/train.py --dataset consumo
     deps:
     - path: data/features/features_consumo.csv
       hash: md5
-      md5: 4c4ae4ca0443893b8430df8369f9bedb
-      size: 8003
+      md5: 5aeae224aa1ac59a7d5617f6a56c72af
+      size: 8263
     - path: params.yaml
       hash: md5
-      md5: 9b948a99e974074602e1c9e8fef757b7
-      size: 615
+      md5: c5f1cdd1df6008e814ffb6c3d3f11210
+      size: 2645
     - path: src/models/__init__.py
       hash: md5
-      md5: 6cefb80b2cced4e528de23061ad38059
-      size: 926
+      md5: bf8a3bbce1d205bd30ea4dd52566aa48
+      size: 1118
+    - path: src/models/cnn_gru_model.py
+      hash: md5
+      md5: 440f954b0fcd790cf1322aa3f12d6174
+      size: 7082
+    - path: src/models/gru_model.py
+      hash: md5
+      md5: 9f7724f7e09dbc5addb582e0a15dd2fb
+      size: 6243
+    - path: src/models/mlp_model.py
+      hash: md5
+      md5: 380eef50d63be466f74f4fecc64dbdac
+      size: 4227
+    - path: src/models/res_cnn_gru_model.py
+      hash: md5
+      md5: 0a541a0bc3d8ac33c693638513493f57
+      size: 7863
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
       size: 909
     - path: src/train.py
       hash: md5
-      md5: 4879869339134330f9d745a406a6a116
-      size: 2243
+      md5: 6286eb38fa6fe870e2c1a88c2798dd5c
+      size: 3003
     params:
       params.yaml:
         model:
-          type: xgboost
+          type: gru
           xgboost:
             n_estimators: 100
             max_depth: 3
@@ -174,46 +202,111 @@ stages:
             subsample: 0.8
             colsample_bytree: 0.8
             objective: reg:squarederror
+          mlp:
+            hidden_layers:
+            - 128
+            - 64
+            dropout: 0.3
+            epochs: 200
+            learning_rate: 0.001
+            batch_size: 16
+          gru:
+            hidden_size: 128
+            num_layers: 2
+            sequence_length: 16
+            dropout: 0.3
+            epochs: 200
+            learning_rate: 0.001
+            batch_size: 16
+          cnn_gru:
+            sequence_length: 16
+            gru_hidden_size: 128
+            gru_num_layers: 2
+            conv_channels:
+            - 64
+            - 128
+            - 256
+            fc_layers:
+            - 128
+            - 64
+            dropout: 0.3
+            epochs: 200
+            learning_rate: 0.001
+            batch_size: 16
+          res_cnn_gru:
+            sequence_length: 16
+            gru_hidden_size: 256
+            gru_num_layers: 3
+            conv_channels:
+            - 32
+            - 64
+            - 128
+            - 256
+            - 256
+            fc_layers:
+            - 256
+            - 128
+            dropout: 0.3
+            epochs: 200
+            learning_rate: 0.001
+            batch_size: 16
         target.consumo: consumo_turistico_interior_total
         train:
           test_size: 0.2
           random_state: 42
+          test_start_date: '2022-01-01'
     outs:
+    - path: models/model_consumo.json
+      hash: md5
+      md5: 5c11dd88500635e4609147f982d253df
+      size: 652203
     - path: models/split_consumo.json
       hash: md5
-      md5: 674aa3b85f9c87b2f9485d7c0fd7853c
-      size: 191
-    - path: models/xgboost_consumo.json
-      hash: md5
-      md5: 0e90c5978fb353c522d9048a2246e0cd
-      size: 101024
+      md5: eee9b9adb245f8d89c9558a5ab33da27
+      size: 187
   train_ivf:
     cmd: python src/train.py --dataset ivf
     deps:
     - path: data/features/features_ivf.csv
       hash: md5
-      md5: 8f403d4b9898470374032d53c676aeea
-      size: 8200
+      md5: f5f0bde0112984102ee132833222e05b
+      size: 8460
     - path: params.yaml
       hash: md5
-      md5: 9b948a99e974074602e1c9e8fef757b7
-      size: 615
+      md5: c5f1cdd1df6008e814ffb6c3d3f11210
+      size: 2645
     - path: src/models/__init__.py
       hash: md5
-      md5: 6cefb80b2cced4e528de23061ad38059
-      size: 926
+      md5: bf8a3bbce1d205bd30ea4dd52566aa48
+      size: 1118
+    - path: src/models/cnn_gru_model.py
+      hash: md5
+      md5: 440f954b0fcd790cf1322aa3f12d6174
+      size: 7082
+    - path: src/models/gru_model.py
+      hash: md5
+      md5: 9f7724f7e09dbc5addb582e0a15dd2fb
+      size: 6243
+    - path: src/models/mlp_model.py
+      hash: md5
+      md5: e848367bb73772bd105ccc3cbc344d98
+      size: 4405
+    - path: src/models/res_cnn_gru_model.py
+      hash: md5
+      md5: 0a541a0bc3d8ac33c693638513493f57
+      size: 7863
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
       size: 909
     - path: src/train.py
       hash: md5
-      md5: 4879869339134330f9d745a406a6a116
-      size: 2243
+      md5: 6286eb38fa6fe870e2c1a88c2798dd5c
+      size: 3003
     params:
       params.yaml:
         model:
-          type: xgboost
+          type: gru
           xgboost:
             n_estimators: 100
             max_depth: 3
@@ -221,46 +314,111 @@ stages:
             subsample: 0.8
             colsample_bytree: 0.8
             objective: reg:squarederror
+          mlp:
+            hidden_layers:
+            - 128
+            - 64
+            dropout: 0.3
+            epochs: 200
+            learning_rate: 0.001
+            batch_size: 16
+          gru:
+            hidden_size: 128
+            num_layers: 2
+            sequence_length: 16
+            dropout: 0.3
+            epochs: 200
+            learning_rate: 0.001
+            batch_size: 16
+          cnn_gru:
+            sequence_length: 16
+            gru_hidden_size: 128
+            gru_num_layers: 2
+            conv_channels:
+            - 64
+            - 128
+            - 256
+            fc_layers:
+            - 128
+            - 64
+            dropout: 0.3
+            epochs: 200
+            learning_rate: 0.001
+            batch_size: 16
+          res_cnn_gru:
+            sequence_length: 16
+            gru_hidden_size: 256
+            gru_num_layers: 3
+            conv_channels:
+            - 32
+            - 64
+            - 128
+            - 256
+            - 256
+            fc_layers:
+            - 256
+            - 128
+            dropout: 0.3
+            epochs: 200
+            learning_rate: 0.001
+            batch_size: 16
         target.ivf: ivf_turistico_total
         train:
           test_size: 0.2
           random_state: 42
+          test_start_date: '2022-01-01'
     outs:
+    - path: models/model_ivf.json
+      hash: md5
+      md5: 19512e31c66e8cdd226ecd2cca60c083
+      size: 652131
     - path: models/split_ivf.json
       hash: md5
-      md5: 2a7cd342eda6bf028548b8b3f632437a
-      size: 178
-    - path: models/xgboost_ivf.json
-      hash: md5
-      md5: c7694fe2fae5499d0657f836fcc2bff8
-      size: 105525
+      md5: d3d7be908e36bf84a06a907856c577a3
+      size: 174
   evaluate_consumo:
     cmd: python src/evaluate.py --dataset consumo
     deps:
     - path: data/features/features_consumo.csv
       hash: md5
-      md5: 4c4ae4ca0443893b8430df8369f9bedb
-      size: 8003
+      md5: 5aeae224aa1ac59a7d5617f6a56c72af
+      size: 8263
+    - path: models/model_consumo.json
+      hash: md5
+      md5: 5c11dd88500635e4609147f982d253df
+      size: 652203
     - path: models/split_consumo.json
       hash: md5
-      md5: 674aa3b85f9c87b2f9485d7c0fd7853c
-      size: 191
-    - path: models/xgboost_consumo.json
-      hash: md5
-      md5: 0e90c5978fb353c522d9048a2246e0cd
-      size: 101024
+      md5: eee9b9adb245f8d89c9558a5ab33da27
+      size: 187
     - path: params.yaml
       hash: md5
-      md5: 9b948a99e974074602e1c9e8fef757b7
-      size: 615
+      md5: c5f1cdd1df6008e814ffb6c3d3f11210
+      size: 2645
     - path: src/evaluate.py
       hash: md5
-      md5: 7abc930b04a5c6d69d61a6c155111702
-      size: 3296
+      md5: ce4d96ccf57976068c6d8137eef54ec0
+      size: 3972
     - path: src/models/__init__.py
       hash: md5
-      md5: 6cefb80b2cced4e528de23061ad38059
-      size: 926
+      md5: bf8a3bbce1d205bd30ea4dd52566aa48
+      size: 1118
+    - path: src/models/cnn_gru_model.py
+      hash: md5
+      md5: 440f954b0fcd790cf1322aa3f12d6174
+      size: 7082
+    - path: src/models/gru_model.py
+      hash: md5
+      md5: 9f7724f7e09dbc5addb582e0a15dd2fb
+      size: 6243
+    - path: src/models/mlp_model.py
+      hash: md5
+      md5: e848367bb73772bd105ccc3cbc344d98
+      size: 4405
+    - path: src/models/res_cnn_gru_model.py
+      hash: md5
+      md5: 0a541a0bc3d8ac33c693638513493f57
+      size: 7863
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
@@ -269,44 +427,60 @@ stages:
       params.yaml:
         evaluate:
           forecast_horizon: 8
-        model.type: xgboost
+        model.type: gru
         target.consumo: consumo_turistico_interior_total
     outs:
     - path: metrics/metrics_consumo.json
       hash: md5
-      md5: f334ad7cd8dc2ad4bfccfd6a2727535f
-      size: 93
+      md5: 389410d197ec8b77ff8ffa47fc74fe8a
+      size: 98
     - path: plots/forecast_consumo.png
       hash: md5
-      md5: f83cf029e0fc6f64ab0ee876b484be0e
-      size: 66767
+      md5: 166949a6cb0c77e7eafdbd6882d055c1
+      size: 57743
   evaluate_ivf:
     cmd: python src/evaluate.py --dataset ivf
     deps:
     - path: data/features/features_ivf.csv
       hash: md5
-      md5: 8f403d4b9898470374032d53c676aeea
-      size: 8200
+      md5: f5f0bde0112984102ee132833222e05b
+      size: 8460
+    - path: models/model_ivf.json
+      hash: md5
+      md5: 19512e31c66e8cdd226ecd2cca60c083
+      size: 652131
     - path: models/split_ivf.json
       hash: md5
-      md5: 2a7cd342eda6bf028548b8b3f632437a
-      size: 178
-    - path: models/xgboost_ivf.json
-      hash: md5
-      md5: c7694fe2fae5499d0657f836fcc2bff8
-      size: 105525
+      md5: d3d7be908e36bf84a06a907856c577a3
+      size: 174
     - path: params.yaml
       hash: md5
-      md5: 9b948a99e974074602e1c9e8fef757b7
-      size: 615
+      md5: c5f1cdd1df6008e814ffb6c3d3f11210
+      size: 2645
     - path: src/evaluate.py
       hash: md5
-      md5: 7abc930b04a5c6d69d61a6c155111702
-      size: 3296
+      md5: ce4d96ccf57976068c6d8137eef54ec0
+      size: 3972
     - path: src/models/__init__.py
       hash: md5
-      md5: 6cefb80b2cced4e528de23061ad38059
-      size: 926
+      md5: bf8a3bbce1d205bd30ea4dd52566aa48
+      size: 1118
+    - path: src/models/cnn_gru_model.py
+      hash: md5
+      md5: 440f954b0fcd790cf1322aa3f12d6174
+      size: 7082
+    - path: src/models/gru_model.py
+      hash: md5
+      md5: 9f7724f7e09dbc5addb582e0a15dd2fb
+      size: 6243
+    - path: src/models/mlp_model.py
+      hash: md5
+      md5: e848367bb73772bd105ccc3cbc344d98
+      size: 4405
+    - path: src/models/res_cnn_gru_model.py
+      hash: md5
+      md5: 0a541a0bc3d8ac33c693638513493f57
+      size: 7863
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
@@ -315,48 +489,64 @@ stages:
       params.yaml:
         evaluate:
           forecast_horizon: 8
-        model.type: xgboost
+        model.type: gru
         target.ivf: ivf_turistico_total
     outs:
     - path: metrics/metrics_ivf.json
       hash: md5
-      md5: 8b57a67c0671380fad11cda06ed20b93
-      size: 93
+      md5: c3ee653ca300a9d7c828123ef0003708
+      size: 96
     - path: plots/forecast_ivf.png
       hash: md5
-      md5: ee3b52bc27438b3153654ea8621f1f05
-      size: 69241
+      md5: edaa264c92b9495d4cac2251ee2f1fb8
+      size: 56570
   interpret_consumo:
     cmd: python src/interpret.py --dataset consumo
     deps:
     - path: data/features/features_consumo.csv
       hash: md5
-      md5: 4c4ae4ca0443893b8430df8369f9bedb
-      size: 8003
+      md5: 5aeae224aa1ac59a7d5617f6a56c72af
+      size: 8263
     - path: data/processed/consumo_turistico_inegi_clean.csv
       hash: md5
       md5: 5bc06c7b751f3418a416dd562c7e8003
       size: 5460
+    - path: models/model_consumo.json
+      hash: md5
+      md5: 5c11dd88500635e4609147f982d253df
+      size: 652203
     - path: models/split_consumo.json
       hash: md5
-      md5: 674aa3b85f9c87b2f9485d7c0fd7853c
-      size: 191
-    - path: models/xgboost_consumo.json
-      hash: md5
-      md5: 0e90c5978fb353c522d9048a2246e0cd
-      size: 101024
+      md5: eee9b9adb245f8d89c9558a5ab33da27
+      size: 187
     - path: params.yaml
       hash: md5
-      md5: 9b948a99e974074602e1c9e8fef757b7
-      size: 615
+      md5: c5f1cdd1df6008e814ffb6c3d3f11210
+      size: 2645
     - path: src/interpret.py
       hash: md5
-      md5: f6e57991954750e9de731e0c3b8a0c86
-      size: 3578
+      md5: 7b19928cd30c1271440d6118d17a66ff
+      size: 4858
     - path: src/models/__init__.py
       hash: md5
-      md5: 6cefb80b2cced4e528de23061ad38059
-      size: 926
+      md5: bf8a3bbce1d205bd30ea4dd52566aa48
+      size: 1118
+    - path: src/models/cnn_gru_model.py
+      hash: md5
+      md5: bed7151a4d2f494ed24c0545fe5a32ea
+      size: 7260
+    - path: src/models/gru_model.py
+      hash: md5
+      md5: 1644001696ecae3e4054cd43dafc04db
+      size: 6421
+    - path: src/models/mlp_model.py
+      hash: md5
+      md5: e848367bb73772bd105ccc3cbc344d98
+      size: 4405
+    - path: src/models/res_cnn_gru_model.py
+      hash: md5
+      md5: 0a541a0bc3d8ac33c693638513493f57
+      size: 7863
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
@@ -366,13 +556,14 @@ stages:
         interpret:
           stl_period: 4
           shap_max_display: 10
-        model.type: xgboost
+          save_shap_values: true
+        model.type: gru
         target.consumo: consumo_turistico_interior_total
     outs:
     - path: plots/shap_consumo.png
       hash: md5
-      md5: d5f14c1134748df88a8fdec216cf04f7
-      size: 27392
+      md5: 2be42c3ad533b107f567193da6b12b2d
+      size: 12333
     - path: plots/stl_consumo.png
       hash: md5
       md5: d4ca83399a24c64029a1e932863e18c1
@@ -382,32 +573,48 @@ stages:
     deps:
     - path: data/features/features_ivf.csv
       hash: md5
-      md5: 8f403d4b9898470374032d53c676aeea
-      size: 8200
+      md5: f5f0bde0112984102ee132833222e05b
+      size: 8460
     - path: data/processed/indice_volumen_fisico_inegi_clean.csv
       hash: md5
       md5: 9847852b371a8bb8a4525c3e22d1949d
       size: 5524
+    - path: models/model_ivf.json
+      hash: md5
+      md5: 19512e31c66e8cdd226ecd2cca60c083
+      size: 652131
     - path: models/split_ivf.json
       hash: md5
-      md5: 2a7cd342eda6bf028548b8b3f632437a
-      size: 178
-    - path: models/xgboost_ivf.json
-      hash: md5
-      md5: c7694fe2fae5499d0657f836fcc2bff8
-      size: 105525
+      md5: d3d7be908e36bf84a06a907856c577a3
+      size: 174
     - path: params.yaml
       hash: md5
-      md5: 9b948a99e974074602e1c9e8fef757b7
-      size: 615
+      md5: c5f1cdd1df6008e814ffb6c3d3f11210
+      size: 2645
     - path: src/interpret.py
       hash: md5
-      md5: f6e57991954750e9de731e0c3b8a0c86
-      size: 3578
+      md5: 7b19928cd30c1271440d6118d17a66ff
+      size: 4858
     - path: src/models/__init__.py
       hash: md5
-      md5: 6cefb80b2cced4e528de23061ad38059
-      size: 926
+      md5: bf8a3bbce1d205bd30ea4dd52566aa48
+      size: 1118
+    - path: src/models/cnn_gru_model.py
+      hash: md5
+      md5: bed7151a4d2f494ed24c0545fe5a32ea
+      size: 7260
+    - path: src/models/gru_model.py
+      hash: md5
+      md5: 1644001696ecae3e4054cd43dafc04db
+      size: 6421
+    - path: src/models/mlp_model.py
+      hash: md5
+      md5: e848367bb73772bd105ccc3cbc344d98
+      size: 4405
+    - path: src/models/res_cnn_gru_model.py
+      hash: md5
+      md5: b0c9c2d893eced6b754191a3b5aee581
+      size: 8041
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
@@ -417,13 +624,14 @@ stages:
         interpret:
           stl_period: 4
           shap_max_display: 10
-        model.type: xgboost
+          save_shap_values: true
+        model.type: gru
         target.ivf: ivf_turistico_total
     outs:
     - path: plots/shap_ivf.png
       hash: md5
-      md5: f4bf41992e88e74c48b3c34b37264017
-      size: 25957
+      md5: 29f7cc3d63a187e1f0541ecd2c4a3aa5
+      size: 12145
     - path: plots/stl_ivf.png
       hash: md5
       md5: 7b44d33b2ce1751b42a1769f898bb869
@@ -433,20 +641,20 @@ stages:
     deps:
     - path: data/processed/indicadores_backcasted.csv
       hash: md5
-      md5: 6a27f17ade85087d6af0ca29f9b721e8
-      size: 64843
+      md5: 0d41fdca6e3d1c1ca04e6f2e0154cfde
+      size: 62812
     - path: data/processed/indice_volumen_fisico_inegi_clean.csv
       hash: md5
       md5: 9847852b371a8bb8a4525c3e22d1949d
       size: 5524
     - path: params.yaml
       hash: md5
-      md5: 06c82ca724ee69ce78235d0fe0343810
-      size: 1652
+      md5: c5f1cdd1df6008e814ffb6c3d3f11210
+      size: 2645
     - path: src/features_ivf_multi.py
       hash: md5
-      md5: 5dd536f5cacac2e7becb626e305537dd
-      size: 4242
+      md5: 1356f45ec8888ab8d0b58c1ad48a24c6
+      size: 4520
     params:
       params.yaml:
         features:
@@ -460,37 +668,38 @@ stages:
           - 4
           add_quarter_dummies: true
           add_trend: true
+          covid_dummy: true
           train_start_date:
           indicators:
             aggregation: sum
             fill_missing: 0
-            backfill_method: xgboost_backcast
+            backfill_method: linear
         ivf_multi.ivf_total_nacional:
           target: ivf_total_nacional
     outs:
     - path: data/features/features_ivf_total_nacional.csv
       hash: md5
-      md5: aabe85b23c9c86564d10fb9ce9d9b8c8
-      size: 69053
+      md5: 16f2ea057ce777f767076fbfeb4539d4
+      size: 67447
   features_ivf_multi@ivf_turistico_servicios:
     cmd: python src/features_ivf_multi.py --series ivf_turistico_servicios
     deps:
     - path: data/processed/indicadores_backcasted.csv
       hash: md5
-      md5: 6a27f17ade85087d6af0ca29f9b721e8
-      size: 64843
+      md5: 0d41fdca6e3d1c1ca04e6f2e0154cfde
+      size: 62812
     - path: data/processed/indice_volumen_fisico_inegi_clean.csv
       hash: md5
       md5: 9847852b371a8bb8a4525c3e22d1949d
       size: 5524
     - path: params.yaml
       hash: md5
-      md5: 06c82ca724ee69ce78235d0fe0343810
-      size: 1652
+      md5: c5f1cdd1df6008e814ffb6c3d3f11210
+      size: 2645
     - path: src/features_ivf_multi.py
       hash: md5
-      md5: 5dd536f5cacac2e7becb626e305537dd
-      size: 4242
+      md5: 1356f45ec8888ab8d0b58c1ad48a24c6
+      size: 4520
     params:
       params.yaml:
         features:
@@ -504,37 +713,38 @@ stages:
           - 4
           add_quarter_dummies: true
           add_trend: true
+          covid_dummy: true
           train_start_date:
           indicators:
             aggregation: sum
             fill_missing: 0
-            backfill_method: xgboost_backcast
+            backfill_method: linear
         ivf_multi.ivf_turistico_servicios:
           target: ivf_turistico_servicios
     outs:
     - path: data/features/features_ivf_turistico_servicios.csv
       hash: md5
-      md5: de84644fd449aabc0b285a400df742ee
-      size: 68568
+      md5: bd452f37bb110ebc5cdf9b45af9165c1
+      size: 66962
   features_ivf_multi@ivf_turistico_total:
     cmd: python src/features_ivf_multi.py --series ivf_turistico_total
     deps:
     - path: data/processed/indicadores_backcasted.csv
       hash: md5
-      md5: 6a27f17ade85087d6af0ca29f9b721e8
-      size: 64843
+      md5: 0d41fdca6e3d1c1ca04e6f2e0154cfde
+      size: 62812
     - path: data/processed/indice_volumen_fisico_inegi_clean.csv
       hash: md5
       md5: 9847852b371a8bb8a4525c3e22d1949d
       size: 5524
     - path: params.yaml
       hash: md5
-      md5: 06c82ca724ee69ce78235d0fe0343810
-      size: 1652
+      md5: c5f1cdd1df6008e814ffb6c3d3f11210
+      size: 2645
     - path: src/features_ivf_multi.py
       hash: md5
-      md5: 5dd536f5cacac2e7becb626e305537dd
-      size: 4242
+      md5: 1356f45ec8888ab8d0b58c1ad48a24c6
+      size: 4520
     params:
       params.yaml:
         features:
@@ -548,37 +758,38 @@ stages:
           - 4
           add_quarter_dummies: true
           add_trend: true
+          covid_dummy: true
           train_start_date:
           indicators:
             aggregation: sum
             fill_missing: 0
-            backfill_method: xgboost_backcast
+            backfill_method: linear
         ivf_multi.ivf_turistico_total:
           target: ivf_turistico_total
     outs:
     - path: data/features/features_ivf_turistico_total.csv
       hash: md5
-      md5: 7e7d4c9af964edc5fa83d20e6c1d5488
-      size: 68666
+      md5: 236de3bcd0686d0666bb1e306775f451
+      size: 67060
   features_ivf_multi@ivf_turistico_bienes:
     cmd: python src/features_ivf_multi.py --series ivf_turistico_bienes
     deps:
     - path: data/processed/indicadores_backcasted.csv
       hash: md5
-      md5: 6a27f17ade85087d6af0ca29f9b721e8
-      size: 64843
+      md5: 0d41fdca6e3d1c1ca04e6f2e0154cfde
+      size: 62812
     - path: data/processed/indice_volumen_fisico_inegi_clean.csv
       hash: md5
       md5: 9847852b371a8bb8a4525c3e22d1949d
       size: 5524
     - path: params.yaml
       hash: md5
-      md5: 06c82ca724ee69ce78235d0fe0343810
-      size: 1652
+      md5: c5f1cdd1df6008e814ffb6c3d3f11210
+      size: 2645
     - path: src/features_ivf_multi.py
       hash: md5
-      md5: 5dd536f5cacac2e7becb626e305537dd
-      size: 4242
+      md5: 1356f45ec8888ab8d0b58c1ad48a24c6
+      size: 4520
     params:
       params.yaml:
         features:
@@ -592,47 +803,64 @@ stages:
           - 4
           add_quarter_dummies: true
           add_trend: true
+          covid_dummy: true
           train_start_date:
           indicators:
             aggregation: sum
             fill_missing: 0
-            backfill_method: xgboost_backcast
+            backfill_method: linear
         ivf_multi.ivf_turistico_bienes:
           target: ivf_turistico_bienes
     outs:
     - path: data/features/features_ivf_turistico_bienes.csv
       hash: md5
-      md5: 986c77af705cf5a348203cd110b77e1f
-      size: 69378
+      md5: 5d21d8cee3e0d1889f919e7ba8483fd0
+      size: 67772
   train_ivf_multi@ivf_total_nacional:
     cmd: python src/train.py --dataset ivf_total_nacional
     deps:
     - path: data/features/features_ivf_total_nacional.csv
       hash: md5
-      md5: aabe85b23c9c86564d10fb9ce9d9b8c8
-      size: 69053
+      md5: 16f2ea057ce777f767076fbfeb4539d4
+      size: 67447
     - path: params.yaml
       hash: md5
-      md5: 06c82ca724ee69ce78235d0fe0343810
-      size: 1652
+      md5: c5f1cdd1df6008e814ffb6c3d3f11210
+      size: 2645
     - path: src/models/__init__.py
       hash: md5
-      md5: 6cefb80b2cced4e528de23061ad38059
-      size: 926
+      md5: bf8a3bbce1d205bd30ea4dd52566aa48
+      size: 1118
+    - path: src/models/cnn_gru_model.py
+      hash: md5
+      md5: bed7151a4d2f494ed24c0545fe5a32ea
+      size: 7260
+    - path: src/models/gru_model.py
+      hash: md5
+      md5: 1644001696ecae3e4054cd43dafc04db
+      size: 6421
+    - path: src/models/mlp_model.py
+      hash: md5
+      md5: e848367bb73772bd105ccc3cbc344d98
+      size: 4405
+    - path: src/models/res_cnn_gru_model.py
+      hash: md5
+      md5: b0c9c2d893eced6b754191a3b5aee581
+      size: 8041
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
       size: 909
     - path: src/train.py
       hash: md5
-      md5: caf9a0e5392db049aad6109697a273f7
-      size: 2848
+      md5: 6286eb38fa6fe870e2c1a88c2798dd5c
+      size: 3003
     params:
       params.yaml:
         ivf_multi.ivf_total_nacional:
           target: ivf_total_nacional
         model:
-          type: xgboost
+          type: gru
           xgboost:
             n_estimators: 100
             max_depth: 3
@@ -640,47 +868,112 @@ stages:
             subsample: 0.8
             colsample_bytree: 0.8
             objective: reg:squarederror
+          mlp:
+            hidden_layers:
+            - 128
+            - 64
+            dropout: 0.3
+            epochs: 200
+            learning_rate: 0.001
+            batch_size: 16
+          gru:
+            hidden_size: 128
+            num_layers: 2
+            sequence_length: 16
+            dropout: 0.3
+            epochs: 200
+            learning_rate: 0.001
+            batch_size: 16
+          cnn_gru:
+            sequence_length: 16
+            gru_hidden_size: 128
+            gru_num_layers: 2
+            conv_channels:
+            - 64
+            - 128
+            - 256
+            fc_layers:
+            - 128
+            - 64
+            dropout: 0.3
+            epochs: 200
+            learning_rate: 0.001
+            batch_size: 16
+          res_cnn_gru:
+            sequence_length: 16
+            gru_hidden_size: 256
+            gru_num_layers: 3
+            conv_channels:
+            - 32
+            - 64
+            - 128
+            - 256
+            - 256
+            fc_layers:
+            - 256
+            - 128
+            dropout: 0.3
+            epochs: 200
+            learning_rate: 0.001
+            batch_size: 16
         train:
           test_size: 0.2
           random_state: 42
+          test_start_date: '2022-01-01'
     outs:
+    - path: models/model_ivf_total_nacional.json
+      hash: md5
+      md5: 08e9274280f4565cc92b13f55ba2d058
+      size: 710641
     - path: models/split_ivf_total_nacional.json
       hash: md5
-      md5: 6e205d154f65d7a2626a7598229e92ec
-      size: 177
-    - path: models/xgboost_ivf_total_nacional.json
-      hash: md5
-      md5: 64eb6bf4fdcd54dd58fbe1c8f103539a
-      size: 108998
+      md5: 86272ff75e6c4ded12511bb8aa36f7e6
+      size: 173
   train_ivf_multi@ivf_turistico_total:
     cmd: python src/train.py --dataset ivf_turistico_total
     deps:
     - path: data/features/features_ivf_turistico_total.csv
       hash: md5
-      md5: 7e7d4c9af964edc5fa83d20e6c1d5488
-      size: 68666
+      md5: 236de3bcd0686d0666bb1e306775f451
+      size: 67060
     - path: params.yaml
       hash: md5
-      md5: 06c82ca724ee69ce78235d0fe0343810
-      size: 1652
+      md5: c5f1cdd1df6008e814ffb6c3d3f11210
+      size: 2645
     - path: src/models/__init__.py
       hash: md5
-      md5: 6cefb80b2cced4e528de23061ad38059
-      size: 926
+      md5: bf8a3bbce1d205bd30ea4dd52566aa48
+      size: 1118
+    - path: src/models/cnn_gru_model.py
+      hash: md5
+      md5: bed7151a4d2f494ed24c0545fe5a32ea
+      size: 7260
+    - path: src/models/gru_model.py
+      hash: md5
+      md5: 1644001696ecae3e4054cd43dafc04db
+      size: 6421
+    - path: src/models/mlp_model.py
+      hash: md5
+      md5: b4ae3cc3a7dda59bdc01c3ce1d201f0e
+      size: 4643
+    - path: src/models/res_cnn_gru_model.py
+      hash: md5
+      md5: b0c9c2d893eced6b754191a3b5aee581
+      size: 8041
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
       size: 909
     - path: src/train.py
       hash: md5
-      md5: caf9a0e5392db049aad6109697a273f7
-      size: 2848
+      md5: 6286eb38fa6fe870e2c1a88c2798dd5c
+      size: 3003
     params:
       params.yaml:
         ivf_multi.ivf_turistico_total:
           target: ivf_turistico_total
         model:
-          type: xgboost
+          type: gru
           xgboost:
             n_estimators: 100
             max_depth: 3
@@ -688,47 +981,112 @@ stages:
             subsample: 0.8
             colsample_bytree: 0.8
             objective: reg:squarederror
+          mlp:
+            hidden_layers:
+            - 128
+            - 64
+            dropout: 0.3
+            epochs: 200
+            learning_rate: 0.001
+            batch_size: 16
+          gru:
+            hidden_size: 128
+            num_layers: 2
+            sequence_length: 16
+            dropout: 0.3
+            epochs: 200
+            learning_rate: 0.001
+            batch_size: 16
+          cnn_gru:
+            sequence_length: 16
+            gru_hidden_size: 128
+            gru_num_layers: 2
+            conv_channels:
+            - 64
+            - 128
+            - 256
+            fc_layers:
+            - 128
+            - 64
+            dropout: 0.3
+            epochs: 200
+            learning_rate: 0.001
+            batch_size: 16
+          res_cnn_gru:
+            sequence_length: 16
+            gru_hidden_size: 256
+            gru_num_layers: 3
+            conv_channels:
+            - 32
+            - 64
+            - 128
+            - 256
+            - 256
+            fc_layers:
+            - 256
+            - 128
+            dropout: 0.3
+            epochs: 200
+            learning_rate: 0.001
+            batch_size: 16
         train:
           test_size: 0.2
           random_state: 42
+          test_start_date: '2022-01-01'
     outs:
+    - path: models/model_ivf_turistico_total.json
+      hash: md5
+      md5: fc60fd0a33847b5c739d3bc11433dfc9
+      size: 710659
     - path: models/split_ivf_turistico_total.json
       hash: md5
-      md5: 2a7cd342eda6bf028548b8b3f632437a
-      size: 178
-    - path: models/xgboost_ivf_turistico_total.json
-      hash: md5
-      md5: df08b1f76f0e473b25bb13963a6a6e43
-      size: 109643
+      md5: d3d7be908e36bf84a06a907856c577a3
+      size: 174
   train_ivf_multi@ivf_turistico_bienes:
     cmd: python src/train.py --dataset ivf_turistico_bienes
     deps:
     - path: data/features/features_ivf_turistico_bienes.csv
       hash: md5
-      md5: 986c77af705cf5a348203cd110b77e1f
-      size: 69378
+      md5: 5d21d8cee3e0d1889f919e7ba8483fd0
+      size: 67772
     - path: params.yaml
       hash: md5
-      md5: 06c82ca724ee69ce78235d0fe0343810
-      size: 1652
+      md5: c5f1cdd1df6008e814ffb6c3d3f11210
+      size: 2645
     - path: src/models/__init__.py
       hash: md5
-      md5: 6cefb80b2cced4e528de23061ad38059
-      size: 926
+      md5: bf8a3bbce1d205bd30ea4dd52566aa48
+      size: 1118
+    - path: src/models/cnn_gru_model.py
+      hash: md5
+      md5: bed7151a4d2f494ed24c0545fe5a32ea
+      size: 7260
+    - path: src/models/gru_model.py
+      hash: md5
+      md5: 1644001696ecae3e4054cd43dafc04db
+      size: 6421
+    - path: src/models/mlp_model.py
+      hash: md5
+      md5: b4ae3cc3a7dda59bdc01c3ce1d201f0e
+      size: 4643
+    - path: src/models/res_cnn_gru_model.py
+      hash: md5
+      md5: b0c9c2d893eced6b754191a3b5aee581
+      size: 8041
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
       size: 909
     - path: src/train.py
       hash: md5
-      md5: caf9a0e5392db049aad6109697a273f7
-      size: 2848
+      md5: 6286eb38fa6fe870e2c1a88c2798dd5c
+      size: 3003
     params:
       params.yaml:
         ivf_multi.ivf_turistico_bienes:
           target: ivf_turistico_bienes
         model:
-          type: xgboost
+          type: gru
           xgboost:
             n_estimators: 100
             max_depth: 3
@@ -736,47 +1094,112 @@ stages:
             subsample: 0.8
             colsample_bytree: 0.8
             objective: reg:squarederror
+          mlp:
+            hidden_layers:
+            - 128
+            - 64
+            dropout: 0.3
+            epochs: 200
+            learning_rate: 0.001
+            batch_size: 16
+          gru:
+            hidden_size: 128
+            num_layers: 2
+            sequence_length: 16
+            dropout: 0.3
+            epochs: 200
+            learning_rate: 0.001
+            batch_size: 16
+          cnn_gru:
+            sequence_length: 16
+            gru_hidden_size: 128
+            gru_num_layers: 2
+            conv_channels:
+            - 64
+            - 128
+            - 256
+            fc_layers:
+            - 128
+            - 64
+            dropout: 0.3
+            epochs: 200
+            learning_rate: 0.001
+            batch_size: 16
+          res_cnn_gru:
+            sequence_length: 16
+            gru_hidden_size: 256
+            gru_num_layers: 3
+            conv_channels:
+            - 32
+            - 64
+            - 128
+            - 256
+            - 256
+            fc_layers:
+            - 256
+            - 128
+            dropout: 0.3
+            epochs: 200
+            learning_rate: 0.001
+            batch_size: 16
         train:
           test_size: 0.2
           random_state: 42
+          test_start_date: '2022-01-01'
     outs:
+    - path: models/model_ivf_turistico_bienes.json
+      hash: md5
+      md5: 5189ff12af0dfc282c59b1eb85ad3b11
+      size: 710677
     - path: models/split_ivf_turistico_bienes.json
       hash: md5
-      md5: a63a6788b4bb74fd84d06989f9595ba5
-      size: 179
-    - path: models/xgboost_ivf_turistico_bienes.json
-      hash: md5
-      md5: 26e9ebea3d091210f21a4f8f3f25cd63
-      size: 109922
+      md5: e5a98a3d77b6e94dc00c3e233300426e
+      size: 175
   train_ivf_multi@ivf_turistico_servicios:
     cmd: python src/train.py --dataset ivf_turistico_servicios
     deps:
     - path: data/features/features_ivf_turistico_servicios.csv
       hash: md5
-      md5: de84644fd449aabc0b285a400df742ee
-      size: 68568
+      md5: bd452f37bb110ebc5cdf9b45af9165c1
+      size: 66962
     - path: params.yaml
       hash: md5
-      md5: 06c82ca724ee69ce78235d0fe0343810
-      size: 1652
+      md5: c5f1cdd1df6008e814ffb6c3d3f11210
+      size: 2645
     - path: src/models/__init__.py
       hash: md5
-      md5: 6cefb80b2cced4e528de23061ad38059
-      size: 926
+      md5: bf8a3bbce1d205bd30ea4dd52566aa48
+      size: 1118
+    - path: src/models/cnn_gru_model.py
+      hash: md5
+      md5: 889fa705137aa63145d2fd2b884ce9d7
+      size: 7473
+    - path: src/models/gru_model.py
+      hash: md5
+      md5: c267b8e2b7b9a1bbc7b19ab701dcbed4
+      size: 6634
+    - path: src/models/mlp_model.py
+      hash: md5
+      md5: b4ae3cc3a7dda59bdc01c3ce1d201f0e
+      size: 4643
+    - path: src/models/res_cnn_gru_model.py
+      hash: md5
+      md5: f7b50103a971b9fa12ca49ef974a42ad
+      size: 8254
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
       size: 909
     - path: src/train.py
       hash: md5
-      md5: caf9a0e5392db049aad6109697a273f7
-      size: 2848
+      md5: 6286eb38fa6fe870e2c1a88c2798dd5c
+      size: 3003
     params:
       params.yaml:
         ivf_multi.ivf_turistico_servicios:
           target: ivf_turistico_servicios
         model:
-          type: xgboost
+          type: gru
           xgboost:
             n_estimators: 100
             max_depth: 3
@@ -784,45 +1207,110 @@ stages:
             subsample: 0.8
             colsample_bytree: 0.8
             objective: reg:squarederror
+          mlp:
+            hidden_layers:
+            - 128
+            - 64
+            dropout: 0.3
+            epochs: 200
+            learning_rate: 0.001
+            batch_size: 16
+          gru:
+            hidden_size: 128
+            num_layers: 2
+            sequence_length: 16
+            dropout: 0.3
+            epochs: 200
+            learning_rate: 0.001
+            batch_size: 16
+          cnn_gru:
+            sequence_length: 16
+            gru_hidden_size: 128
+            gru_num_layers: 2
+            conv_channels:
+            - 64
+            - 128
+            - 256
+            fc_layers:
+            - 128
+            - 64
+            dropout: 0.3
+            epochs: 200
+            learning_rate: 0.001
+            batch_size: 16
+          res_cnn_gru:
+            sequence_length: 16
+            gru_hidden_size: 256
+            gru_num_layers: 3
+            conv_channels:
+            - 32
+            - 64
+            - 128
+            - 256
+            - 256
+            fc_layers:
+            - 256
+            - 128
+            dropout: 0.3
+            epochs: 200
+            learning_rate: 0.001
+            batch_size: 16
         train:
           test_size: 0.2
           random_state: 42
+          test_start_date: '2022-01-01'
     outs:
+    - path: models/model_ivf_turistico_servicios.json
+      hash: md5
+      md5: a83ac985b882f5b94abf479a21fbe61f
+      size: 710795
     - path: models/split_ivf_turistico_servicios.json
       hash: md5
-      md5: df5e30cb191e03f184be4b0f2fff721d
-      size: 182
-    - path: models/xgboost_ivf_turistico_servicios.json
-      hash: md5
-      md5: 8207a012418b991695ff86440df3b975
-      size: 110508
+      md5: 109598cc35b2af357c76439e442b91f3
+      size: 178
   evaluate_ivf_multi@ivf_total_nacional:
     cmd: python src/evaluate.py --dataset ivf_total_nacional
     deps:
     - path: data/features/features_ivf_total_nacional.csv
       hash: md5
-      md5: aabe85b23c9c86564d10fb9ce9d9b8c8
-      size: 69053
+      md5: 16f2ea057ce777f767076fbfeb4539d4
+      size: 67447
+    - path: models/model_ivf_total_nacional.json
+      hash: md5
+      md5: 08e9274280f4565cc92b13f55ba2d058
+      size: 710641
     - path: models/split_ivf_total_nacional.json
       hash: md5
-      md5: 6e205d154f65d7a2626a7598229e92ec
-      size: 177
-    - path: models/xgboost_ivf_total_nacional.json
-      hash: md5
-      md5: 64eb6bf4fdcd54dd58fbe1c8f103539a
-      size: 108998
+      md5: 86272ff75e6c4ded12511bb8aa36f7e6
+      size: 173
     - path: params.yaml
       hash: md5
-      md5: 06c82ca724ee69ce78235d0fe0343810
-      size: 1652
+      md5: c5f1cdd1df6008e814ffb6c3d3f11210
+      size: 2645
     - path: src/evaluate.py
       hash: md5
-      md5: 5d4f6339324b9bda1be12d514494eb9a
-      size: 3979
+      md5: ce4d96ccf57976068c6d8137eef54ec0
+      size: 3972
     - path: src/models/__init__.py
       hash: md5
-      md5: 6cefb80b2cced4e528de23061ad38059
-      size: 926
+      md5: bf8a3bbce1d205bd30ea4dd52566aa48
+      size: 1118
+    - path: src/models/cnn_gru_model.py
+      hash: md5
+      md5: 889fa705137aa63145d2fd2b884ce9d7
+      size: 7473
+    - path: src/models/gru_model.py
+      hash: md5
+      md5: c267b8e2b7b9a1bbc7b19ab701dcbed4
+      size: 6634
+    - path: src/models/mlp_model.py
+      hash: md5
+      md5: b4ae3cc3a7dda59bdc01c3ce1d201f0e
+      size: 4643
+    - path: src/models/res_cnn_gru_model.py
+      hash: md5
+      md5: f7b50103a971b9fa12ca49ef974a42ad
+      size: 8254
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
@@ -833,43 +1321,59 @@ stages:
           forecast_horizon: 8
         ivf_multi.ivf_total_nacional:
           target: ivf_total_nacional
-        model.type: xgboost
+        model.type: gru
     outs:
     - path: metrics/metrics_ivf_total_nacional.json
       hash: md5
-      md5: fc7cbeaee857f9d23a768e1318c7901a
-      size: 93
+      md5: a97821d835b97f9b739bc3061d7cb742
+      size: 96
     - path: plots/forecast_ivf_total_nacional.png
       hash: md5
-      md5: 6d1ba621da4d3451a5098de6c45996ce
-      size: 63951
+      md5: 2f0391f3ea21a94804b77386b534b69a
+      size: 57514
   evaluate_ivf_multi@ivf_turistico_total:
     cmd: python src/evaluate.py --dataset ivf_turistico_total
     deps:
     - path: data/features/features_ivf_turistico_total.csv
       hash: md5
-      md5: 7e7d4c9af964edc5fa83d20e6c1d5488
-      size: 68666
+      md5: 236de3bcd0686d0666bb1e306775f451
+      size: 67060
+    - path: models/model_ivf_turistico_total.json
+      hash: md5
+      md5: fc60fd0a33847b5c739d3bc11433dfc9
+      size: 710659
     - path: models/split_ivf_turistico_total.json
       hash: md5
-      md5: 2a7cd342eda6bf028548b8b3f632437a
-      size: 178
-    - path: models/xgboost_ivf_turistico_total.json
-      hash: md5
-      md5: df08b1f76f0e473b25bb13963a6a6e43
-      size: 109643
+      md5: d3d7be908e36bf84a06a907856c577a3
+      size: 174
     - path: params.yaml
       hash: md5
-      md5: 06c82ca724ee69ce78235d0fe0343810
-      size: 1652
+      md5: c5f1cdd1df6008e814ffb6c3d3f11210
+      size: 2645
     - path: src/evaluate.py
       hash: md5
-      md5: 5d4f6339324b9bda1be12d514494eb9a
-      size: 3979
+      md5: ce4d96ccf57976068c6d8137eef54ec0
+      size: 3972
     - path: src/models/__init__.py
       hash: md5
-      md5: 6cefb80b2cced4e528de23061ad38059
-      size: 926
+      md5: bf8a3bbce1d205bd30ea4dd52566aa48
+      size: 1118
+    - path: src/models/cnn_gru_model.py
+      hash: md5
+      md5: 889fa705137aa63145d2fd2b884ce9d7
+      size: 7473
+    - path: src/models/gru_model.py
+      hash: md5
+      md5: c267b8e2b7b9a1bbc7b19ab701dcbed4
+      size: 6634
+    - path: src/models/mlp_model.py
+      hash: md5
+      md5: b4ae3cc3a7dda59bdc01c3ce1d201f0e
+      size: 4643
+    - path: src/models/res_cnn_gru_model.py
+      hash: md5
+      md5: f7b50103a971b9fa12ca49ef974a42ad
+      size: 8254
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
@@ -880,43 +1384,59 @@ stages:
           forecast_horizon: 8
         ivf_multi.ivf_turistico_total:
           target: ivf_turistico_total
-        model.type: xgboost
+        model.type: gru
     outs:
     - path: metrics/metrics_ivf_turistico_total.json
       hash: md5
-      md5: 9d2b7aae6e24833a7c15203d52795b2e
-      size: 94
+      md5: 250fb6643f8af1f9954257225d5798a6
+      size: 96
     - path: plots/forecast_ivf_turistico_total.png
       hash: md5
-      md5: f9246646119b37ef9bf56fea4667292f
-      size: 68758
+      md5: efb002c6283746f245a37bdc1b4f0aa5
+      size: 64608
   evaluate_ivf_multi@ivf_turistico_bienes:
     cmd: python src/evaluate.py --dataset ivf_turistico_bienes
     deps:
     - path: data/features/features_ivf_turistico_bienes.csv
       hash: md5
-      md5: 986c77af705cf5a348203cd110b77e1f
-      size: 69378
+      md5: 5d21d8cee3e0d1889f919e7ba8483fd0
+      size: 67772
+    - path: models/model_ivf_turistico_bienes.json
+      hash: md5
+      md5: 5189ff12af0dfc282c59b1eb85ad3b11
+      size: 710677
     - path: models/split_ivf_turistico_bienes.json
       hash: md5
-      md5: a63a6788b4bb74fd84d06989f9595ba5
-      size: 179
-    - path: models/xgboost_ivf_turistico_bienes.json
-      hash: md5
-      md5: 26e9ebea3d091210f21a4f8f3f25cd63
-      size: 109922
+      md5: e5a98a3d77b6e94dc00c3e233300426e
+      size: 175
     - path: params.yaml
       hash: md5
-      md5: 06c82ca724ee69ce78235d0fe0343810
-      size: 1652
+      md5: c5f1cdd1df6008e814ffb6c3d3f11210
+      size: 2645
     - path: src/evaluate.py
       hash: md5
-      md5: 5d4f6339324b9bda1be12d514494eb9a
-      size: 3979
+      md5: ce4d96ccf57976068c6d8137eef54ec0
+      size: 3972
     - path: src/models/__init__.py
       hash: md5
-      md5: 6cefb80b2cced4e528de23061ad38059
-      size: 926
+      md5: bf8a3bbce1d205bd30ea4dd52566aa48
+      size: 1118
+    - path: src/models/cnn_gru_model.py
+      hash: md5
+      md5: 889fa705137aa63145d2fd2b884ce9d7
+      size: 7473
+    - path: src/models/gru_model.py
+      hash: md5
+      md5: c267b8e2b7b9a1bbc7b19ab701dcbed4
+      size: 6634
+    - path: src/models/mlp_model.py
+      hash: md5
+      md5: b4ae3cc3a7dda59bdc01c3ce1d201f0e
+      size: 4643
+    - path: src/models/res_cnn_gru_model.py
+      hash: md5
+      md5: f7b50103a971b9fa12ca49ef974a42ad
+      size: 8254
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
@@ -927,43 +1447,59 @@ stages:
           forecast_horizon: 8
         ivf_multi.ivf_turistico_bienes:
           target: ivf_turistico_bienes
-        model.type: xgboost
+        model.type: gru
     outs:
     - path: metrics/metrics_ivf_turistico_bienes.json
       hash: md5
-      md5: da05c673398be7d72ac49097c69e0249
-      size: 96
+      md5: c1892aa885f56d914ab1df9dbef52ae8
+      size: 97
     - path: plots/forecast_ivf_turistico_bienes.png
       hash: md5
-      md5: 53aa21636b5d9ed145f9c509e75ec155
-      size: 73512
+      md5: 225c4ecdb3b06c547a09c69e82837eac
+      size: 68196
   evaluate_ivf_multi@ivf_turistico_servicios:
     cmd: python src/evaluate.py --dataset ivf_turistico_servicios
     deps:
     - path: data/features/features_ivf_turistico_servicios.csv
       hash: md5
-      md5: de84644fd449aabc0b285a400df742ee
-      size: 68568
+      md5: bd452f37bb110ebc5cdf9b45af9165c1
+      size: 66962
+    - path: models/model_ivf_turistico_servicios.json
+      hash: md5
+      md5: a83ac985b882f5b94abf479a21fbe61f
+      size: 710795
     - path: models/split_ivf_turistico_servicios.json
       hash: md5
-      md5: df5e30cb191e03f184be4b0f2fff721d
-      size: 182
-    - path: models/xgboost_ivf_turistico_servicios.json
-      hash: md5
-      md5: 8207a012418b991695ff86440df3b975
-      size: 110508
+      md5: 109598cc35b2af357c76439e442b91f3
+      size: 178
     - path: params.yaml
       hash: md5
-      md5: 06c82ca724ee69ce78235d0fe0343810
-      size: 1652
+      md5: c5f1cdd1df6008e814ffb6c3d3f11210
+      size: 2645
     - path: src/evaluate.py
       hash: md5
-      md5: 5d4f6339324b9bda1be12d514494eb9a
-      size: 3979
+      md5: ce4d96ccf57976068c6d8137eef54ec0
+      size: 3972
     - path: src/models/__init__.py
       hash: md5
-      md5: 6cefb80b2cced4e528de23061ad38059
-      size: 926
+      md5: bf8a3bbce1d205bd30ea4dd52566aa48
+      size: 1118
+    - path: src/models/cnn_gru_model.py
+      hash: md5
+      md5: 889fa705137aa63145d2fd2b884ce9d7
+      size: 7473
+    - path: src/models/gru_model.py
+      hash: md5
+      md5: c267b8e2b7b9a1bbc7b19ab701dcbed4
+      size: 6634
+    - path: src/models/mlp_model.py
+      hash: md5
+      md5: b4ae3cc3a7dda59bdc01c3ce1d201f0e
+      size: 4643
+    - path: src/models/res_cnn_gru_model.py
+      hash: md5
+      md5: f7b50103a971b9fa12ca49ef974a42ad
+      size: 8254
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
@@ -974,47 +1510,63 @@ stages:
           forecast_horizon: 8
         ivf_multi.ivf_turistico_servicios:
           target: ivf_turistico_servicios
-        model.type: xgboost
+        model.type: gru
     outs:
     - path: metrics/metrics_ivf_turistico_servicios.json
       hash: md5
-      md5: 983e136bd46f053aa5a46c0fd6dfc4e9
-      size: 94
+      md5: 6d2b5d2032ebce871ed889cc76fe5fd1
+      size: 98
     - path: plots/forecast_ivf_turistico_servicios.png
       hash: md5
-      md5: e6e19824b9a7bb81d5400bfa472d7d53
-      size: 67823
+      md5: d7c81adbe868272ff3e145af126e124c
+      size: 65791
   interpret_ivf_multi@ivf_total_nacional:
     cmd: python src/interpret.py --dataset ivf_total_nacional
     deps:
     - path: data/features/features_ivf_total_nacional.csv
       hash: md5
-      md5: aabe85b23c9c86564d10fb9ce9d9b8c8
-      size: 69053
+      md5: 16f2ea057ce777f767076fbfeb4539d4
+      size: 67447
     - path: data/processed/indice_volumen_fisico_inegi_clean.csv
       hash: md5
       md5: 9847852b371a8bb8a4525c3e22d1949d
       size: 5524
+    - path: models/model_ivf_total_nacional.json
+      hash: md5
+      md5: 08e9274280f4565cc92b13f55ba2d058
+      size: 710641
     - path: models/split_ivf_total_nacional.json
       hash: md5
-      md5: 6e205d154f65d7a2626a7598229e92ec
-      size: 177
-    - path: models/xgboost_ivf_total_nacional.json
-      hash: md5
-      md5: 64eb6bf4fdcd54dd58fbe1c8f103539a
-      size: 108998
+      md5: 86272ff75e6c4ded12511bb8aa36f7e6
+      size: 173
     - path: params.yaml
       hash: md5
-      md5: 06c82ca724ee69ce78235d0fe0343810
-      size: 1652
+      md5: c5f1cdd1df6008e814ffb6c3d3f11210
+      size: 2645
     - path: src/interpret.py
       hash: md5
-      md5: 7d748ee50317ab7120d3808fb2c1c82d
-      size: 4865
+      md5: 7b19928cd30c1271440d6118d17a66ff
+      size: 4858
     - path: src/models/__init__.py
       hash: md5
-      md5: 6cefb80b2cced4e528de23061ad38059
-      size: 926
+      md5: bf8a3bbce1d205bd30ea4dd52566aa48
+      size: 1118
+    - path: src/models/cnn_gru_model.py
+      hash: md5
+      md5: 889fa705137aa63145d2fd2b884ce9d7
+      size: 7473
+    - path: src/models/gru_model.py
+      hash: md5
+      md5: c267b8e2b7b9a1bbc7b19ab701dcbed4
+      size: 6634
+    - path: src/models/mlp_model.py
+      hash: md5
+      md5: b4ae3cc3a7dda59bdc01c3ce1d201f0e
+      size: 4643
+    - path: src/models/res_cnn_gru_model.py
+      hash: md5
+      md5: f7b50103a971b9fa12ca49ef974a42ad
+      size: 8254
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
@@ -1027,20 +1579,20 @@ stages:
           save_shap_values: true
         ivf_multi.ivf_total_nacional:
           target: ivf_total_nacional
-        model.type: xgboost
+        model.type: gru
     outs:
     - path: data/shap/feature_names_ivf_total_nacional.json
       hash: md5
-      md5: 5f43c068c6d1447636b4594a4f4b48c6
-      size: 2343
+      md5: 5eb38ae9623eee70b4688d2d2bd225a1
+      size: 2352
     - path: data/shap/shap_values_ivf_total_nacional.npz
       hash: md5
-      md5: 1702acc6c3aa7b911c2ce5a9bc95edc9
-      size: 18860
+      md5: 1a063da2c86f3f9f1d378f054965dcb3
+      size: 42388
     - path: plots/shap_ivf_total_nacional.png
       hash: md5
-      md5: be8031b477f59ea2b39281db0c0ed6f8
-      size: 41579
+      md5: 910622de0da5a147beed0c6bc5d0a030
+      size: 74217
     - path: plots/stl_ivf_total_nacional.png
       hash: md5
       md5: 7fd3567cd12e5296bb7d2a8bfb9f6a03
@@ -1521,8 +2073,8 @@ stages:
       size: 320410
     - path: params.yaml
       hash: md5
-      md5: 06c82ca724ee69ce78235d0fe0343810
-      size: 1652
+      md5: c5f1cdd1df6008e814ffb6c3d3f11210
+      size: 2645
     - path: src/backcast_indicadores.py
       hash: md5
       md5: 9f70526f97b24d02eaeafa150c20e073
@@ -1532,9 +2084,9 @@ stages:
         features.indicators:
           aggregation: sum
           fill_missing: 0
-          backfill_method: xgboost_backcast
+          backfill_method: linear
     outs:
     - path: data/processed/indicadores_backcasted.csv
       hash: md5
-      md5: 6a27f17ade85087d6af0ca29f9b721e8
-      size: 64843
+      md5: 0d41fdca6e3d1c1ca04e6f2e0154cfde
+      size: 62812

@@ -75,7 +75,7 @@ def train(dataset: str) -> None:
     model.fit(X_train, y_train)
 
     os.makedirs("models", exist_ok=True)
-    model_path = f"models/{model_type}_{dataset}.json"
+    model_path = f"models/model_{dataset}.json"
     model.save(model_path)
     print(f"Modelo guardado en: {model_path}")
 

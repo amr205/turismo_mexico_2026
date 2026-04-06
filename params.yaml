@@ -1,17 +1,23 @@
 target:
-  consumo: "consumo_turistico_interior_total"
-  ivf: "ivf_turistico_total"
+  consumo: consumo_turistico_interior_total
+  ivf: ivf_turistico_total
 
 experiment:
-  name: "baseline"   # cambiar antes de cada corrida: "xgb_linear", "gru_linear", etc.
+  name: cnngru_zero      # cambiar antes de cada corrida: "xgb_linear", "gru_linear", etc.
 
 features:
-  lags: [1, 2, 3, 4]
-  rolling_windows: [2, 4]
+  lags:
+  - 1
+  - 2
+  - 3
+  - 4
+  rolling_windows:
+  - 2
+  - 4
   add_quarter_dummies: true
   add_trend: true
   covid_dummy: true          # dummy binario 1 para 2020 Q1–2021 Q4 (ruptura estructural COVID-19)
-  train_start_date: null   # null = toda la historia disponible; "2018-01-01" = solo desde indicadores
+  train_start_date:        # null = toda la historia disponible; "2018-01-01" = solo desde indicadores
   indicators:
     aggregation: sum
     fill_missing: 0
@@ -21,10 +27,10 @@ features:
     #   seasonal_naive  → valor del mismo trimestre del año más próximo
     #   linear          → regresión lineal por indicador, extrapolada hacia atrás
     #   xgboost_backcast→ XGBoost entrenado sobre serie invertida
-    backfill_method: "xgboost_backcast"
+    backfill_method: zero
 
 model:
-  type: xgboost
+  type: cnn_gru
 
   xgboost:
     n_estimators: 100
@@ -32,10 +38,12 @@ model:
     learning_rate: 0.1
     subsample: 0.8
     colsample_bytree: 0.8
-    objective: "reg:squarederror"
+    objective: reg:squarederror
 
   mlp:
-    hidden_layers: [128, 64]
+    hidden_layers:
+    - 128
+    - 64
     dropout: 0.3
     epochs: 200
     learning_rate: 0.001
@@ -54,8 +62,13 @@ model:
     sequence_length: 16
     gru_hidden_size: 128
     gru_num_layers: 2
-    conv_channels: [64, 128, 256]
-    fc_layers: [128, 64]
+    conv_channels:
+    - 64
+    - 128
+    - 256
+    fc_layers:
+    - 128
+    - 64
     dropout: 0.3
     epochs: 200
     learning_rate: 0.001
@@ -65,8 +78,15 @@ model:
     sequence_length: 16
     gru_hidden_size: 256
     gru_num_layers: 3
-    conv_channels: [32, 64, 128, 256, 256]
-    fc_layers: [256, 128]
+    conv_channels:
+    - 32
+    - 64
+    - 128
+    - 256
+    - 256
+    fc_layers:
+    - 256
+    - 128
     dropout: 0.3
     epochs: 200
     learning_rate: 0.001
@@ -75,7 +95,7 @@ model:
 train:
   test_size: 0.2
   random_state: 42
-  test_start_date: "2022-01-01"   # fija el inicio del conjunto de prueba (anula test_size)
+  test_start_date: '2022-01-01'   # fija el inicio del conjunto de prueba (anula test_size)
 
 evaluate:
   forecast_horizon: 8
@@ -87,14 +107,14 @@ interpret:
 
 ivf_multi:
   ivf_total_nacional:
-    target: "ivf_total_nacional"
+    target: ivf_total_nacional
   ivf_turistico_total:
-    target: "ivf_turistico_total"
+    target: ivf_turistico_total
   ivf_turistico_bienes:
-    target: "ivf_turistico_bienes"
+    target: ivf_turistico_bienes
   ivf_turistico_servicios:
-    target: "ivf_turistico_servicios"
+    target: ivf_turistico_servicios
 
 forecast:
   horizon: 5
-  future_indicator_method: "same_quarter_prior_year"
+  future_indicator_method: same_quarter_prior_year

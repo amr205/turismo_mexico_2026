@@ -78,7 +78,7 @@ def interpret(dataset: str) -> None:
     X_train = X.iloc[:n_train]
 
     ModelClass = get_model_class(model_type)
-    model = ModelClass.load(f"models/{model_type}_{dataset}.json")
+    model = ModelClass.load(f"models/model_{dataset}.json")
 
     shap_values = model.get_shap_explainer(X_train)
 

@@ -84,7 +84,7 @@ def forecast(series: str, horizon: int) -> None:
 
     model_type = params["model"]["type"]
     features_path = f"data/features/features_{series}.csv"
-    model_path = f"models/{model_type}_{series}.json"
+    model_path = f"models/model_{series}.json"
     split_path = f"models/split_{series}.json"
 
     # --- Cargar datos entrenados ---

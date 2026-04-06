@@ -76,7 +76,7 @@ def evaluate(dataset: str) -> None:
     y_test = y.iloc[n_train:]
 
     ModelClass = get_model_class(model_type)
-    model = ModelClass.load(f"models/{model_type}_{dataset}.json")
+    model = ModelClass.load(f"models/model_{dataset}.json")
 
     y_pred = model.predict(X_test)
 

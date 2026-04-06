@@ -84,7 +84,7 @@ stages:
     outs:
       - models/split_consumo.json:
           cache: false
-      - models/xgboost_consumo.json:
+      - models/model_consumo.json:
           cache: false
 
   train_ivf:
@@ -106,7 +106,7 @@ stages:
     outs:
       - models/split_ivf.json:
           cache: false
-      - models/xgboost_ivf.json:
+      - models/model_ivf.json:
           cache: false
 
   evaluate_consumo:
@@ -120,7 +120,7 @@ stages:
       - src/models/cnn_gru_model.py
       - src/models/res_cnn_gru_model.py
       - data/features/features_consumo.csv
-      - models/xgboost_consumo.json
+      - models/model_consumo.json
       - models/split_consumo.json
       - params.yaml
     params:
@@ -145,7 +145,7 @@ stages:
       - src/models/cnn_gru_model.py
       - src/models/res_cnn_gru_model.py
       - data/features/features_ivf.csv
-      - models/xgboost_ivf.json
+      - models/model_ivf.json
       - models/split_ivf.json
       - params.yaml
     params:
@@ -171,7 +171,7 @@ stages:
       - src/models/res_cnn_gru_model.py
       - data/features/features_consumo.csv
       - data/processed/consumo_turistico_inegi_clean.csv
-      - models/xgboost_consumo.json
+      - models/model_consumo.json
       - models/split_consumo.json
       - params.yaml
     params:
@@ -196,7 +196,7 @@ stages:
       - src/models/res_cnn_gru_model.py
       - data/features/features_ivf.csv
       - data/processed/indice_volumen_fisico_inegi_clean.csv
-      - models/xgboost_ivf.json
+      - models/model_ivf.json
       - models/split_ivf.json
       - params.yaml
     params:
@@ -269,7 +269,7 @@ stages:
       outs:
         - models/split_${item}.json:
             cache: false
-        - models/xgboost_${item}.json:
+        - models/model_${item}.json:
             cache: false
 
   evaluate_ivf_multi:
@@ -289,7 +289,7 @@ stages:
         - src/models/cnn_gru_model.py
         - src/models/res_cnn_gru_model.py
         - data/features/features_${item}.csv
-        - models/xgboost_${item}.json
+        - models/model_${item}.json
         - models/split_${item}.json
         - params.yaml
       params:
@@ -321,7 +321,7 @@ stages:
         - src/models/res_cnn_gru_model.py
         - data/features/features_${item}.csv
         - data/processed/indice_volumen_fisico_inegi_clean.csv
-        - models/xgboost_${item}.json
+        - models/model_${item}.json
         - models/split_${item}.json
         - params.yaml
       params:
@@ -350,7 +350,7 @@ stages:
       deps:
         - src/forecast.py
         - data/features/features_${item}.csv
-        - models/xgboost_${item}.json
+        - models/model_${item}.json
         - models/split_${item}.json
         - data/processed/indicadores_backcasted.csv
         - params.yaml

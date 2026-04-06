@@ -114,9 +114,18 @@ class MLPForecaster(BaseForecaster):
 
         X_bg = torch.from_numpy(np.array(X_background, dtype=np.float32))
         self.model.eval()
-        explainer = shap.GradientExplainer(self.model, X_bg)
+
+        class _Wrap(torch.nn.Module):
+            def __init__(self, m): super().__init__(); self.m = m
+            def forward(self, x): return self.m(x).unsqueeze(-1)
+
+        explainer = shap.GradientExplainer(_Wrap(self.model), X_bg)
         shap_values = explainer.shap_values(X_bg)
         # shap_values puede ser lista (una entrada → primer elemento)
         if isinstance(shap_values, list):
             shap_values = shap_values[0]
-        return np.array(shap_values)
+        shap_values = np.array(shap_values)
+        # GradientExplainer devuelve (n, n_features, 1) con wrapper → eliminar última dim
+        if shap_values.ndim == 3 and shap_values.shape[-1] == 1:
+            shap_values = shap_values[..., 0]
+        return shap_values
