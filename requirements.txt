@@ -8,6 +8,6 @@ statsmodels>=0.14,<0.15
 shap>=0.45,<0.50
 seaborn>=0.13,<1.0
 
-# Soporte futuro para redes neuronales (descomentar al agregar LSTM u otros modelos):
-# torch>=2.0,<3.0
+# Redes neuronales (MLP, GRU, CNN-GRU, Res-CNN-GRU):
+torch>=2.0,<3.0
 # keras>=3.0,<4.0

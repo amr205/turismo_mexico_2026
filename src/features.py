@@ -54,6 +54,13 @@ def build_features(dataset: str) -> None:
         for q in [2, 3, 4]:
             features[f"q{q}"] = (quarter == q).astype(int)
 
+    # Dummy COVID: ruptura estructural 2020 Q1 – 2021 Q4
+    if feat_params.get("covid_dummy", False):
+        features["covid"] = (
+            (features.index >= pd.Timestamp("2020-01-01")) &
+            (features.index <= pd.Timestamp("2021-10-01"))
+        ).astype(int)
+
     # Tendencia lineal
     if feat_params["add_trend"]:
         features["trend"] = range(len(features))

@@ -14,86 +14,22 @@ El proyecto procesa tres fuentes de datos trimestrales/mensuales del **INEGI** (
 | Índice de volumen físico (IVF) | `data/raw/indice_volumen_fisico_inegi.csv` | Trimestral | 1993–presente |
 | Indicadores de visitantes | `data/raw/turismo_indicadores_inegi.csv` | Mensual | 2018–presente |
 
-Para los datasets trimestrales, el pipeline entrena un modelo **XGBoost con características de rezago** y produce:
-- Métricas de evaluación (MAE, RMSE, MAPE, R²)
-- Gráficas de importancia de características con **SHAP**
-- Descomposición de tendencia/estacionalidad con **STL**
-
----
-
-## Resultados del modelo base (XGBoost)
-
-| Dataset | MAE | RMSE | MAPE | R² | Período de prueba |
-|---|---|---|---|---|---|
-| Consumo turístico | 5.02 | 10.27 | 6.96% | 0.271 | 2019 Q1 – 2025 Q2 (26 trimestres) |
-| Índice volumen físico | 8.29 | 11.96 | 10.21% | 0.212 | 2019 Q1 – 2025 Q2 (26 trimestres) |
-
----
-
-## Estructura del proyecto
-
-```
-paper_turismo/
-├── data/
-│   ├── raw/              # CSVs originales del INEGI (en git)
-│   ├── processed/        # CSVs limpios (generados por el pipeline)
-│   └── features/         # Matrices de características con rezagos (generadas)
-├── models/               # Modelos entrenados (.json) y metadatos de división
-├── metrics/              # Métricas de evaluación (.json, seguidas por DVC)
-├── plots/                # Todas las gráficas generadas
-├── src/
-│   ├── models/           # Registro de modelos (extensible a LSTM, etc.)
-│   │   ├── base.py       # Interfaz BaseForecaster
-│   │   ├── xgboost_model.py
-│   │   └── __init__.py   # Registro MODEL_REGISTRY
-│   ├── clean_file_consumo_turistico.py
-│   ├── clean_file_indice_volumen_fisico.py
-│   ├── clean_turismo_indicadores.py
-│   ├── plot_timeseries.py
-│   ├── features.py       # Ingeniería de características
-│   ├── train.py          # Entrenamiento del modelo
-│   ├── evaluate.py       # Evaluación y gráfica de pronóstico
-│   └── interpret.py      # SHAP + descomposición STL
-├── dvc.yaml              # Definición del pipeline (11 etapas)
-├── params.yaml           # Hiperparámetros y configuración del modelo
-└── requirements.txt
-```
+El pipeline entrena 5 tipos de modelos sobre 4 series IVF, con distintos métodos de backfill para los indicadores pre-2018. Incluye variable dummy de COVID-19 y conjunto de prueba post-pandemia.
 
 ---
 
 ## Configuración del entorno
 
-### Requisitos previos
-
 - Python 3.10+
 - Git
 
-### Instalación
-
-1. Clona el repositorio:
-   ```bash
-   git clone <url-del-repo>
-   cd paper_turismo
-   ```
-
-2. Crea y activa un entorno virtual:
-   ```bash
-   python -m venv .venv
-
-   # Windows (bash/Git Bash)
-   source .venv/Scripts/activate
-
-   # Windows (CMD)
-   .venv\Scripts\activate.bat
-
-   # macOS / Linux
-   source .venv/bin/activate
-   ```
-
-3. Instala las dependencias:
-   ```bash
-   pip install -r requirements.txt
-   ```
+```bash
+git clone <url-del-repo>
+cd paper_turismo
+python -m venv .venv
+source .venv/Scripts/activate   # Windows bash
+pip install -r requirements.txt
+```
 
 ---
 
@@ -106,63 +42,120 @@ source .venv/Scripts/activate   # Windows bash
 dvc repro
 ```
 
-`dvc repro` detecta qué etapas necesitan re-ejecutarse (porque cambiaron sus dependencias o parámetros) y salta las que ya están al día.
+`dvc repro` detecta qué etapas necesitan re-ejecutarse y salta las que ya están al día.
 
-Para forzar la re-ejecución de todas las etapas:
+---
+
+## Experimentos del paper
+
+El paper compara 5 arquitecturas de modelo × 3 métodos de backfill = 15 experimentos. El script de automatización los corre secuencialmente:
+
 ```bash
-dvc repro --force
+# Correr todos los experimentos y generar figuras de comparación
+python src/run_all_experiments.py
+
+# Vista previa sin ejecutar nada
+python src/run_all_experiments.py --dry-run
+
+# Correr solo un subconjunto
+python src/run_all_experiments.py --only xgb_linear,mlp_linear
 ```
 
-Para re-ejecutar una etapa específica y sus descendientes:
+Después del run completo, ver todos los experimentos con:
 ```bash
-dvc repro train_consumo
+dvc exp show
 ```
 
-### Etapas del pipeline
+### Matriz de experimentos
+
+| Experimento | Modelo | Backfill |
+|---|---|---|
+| `xgb_zero` | XGBoost | zero |
+| `xgb_linear` | XGBoost | linear |
+| `xgb_xgb_backcast` | XGBoost | xgboost_backcast |
+| `mlp_zero` / `mlp_linear` / `mlp_xgb_backcast` | MLP | — |
+| `gru_zero` / `gru_linear` / `gru_xgb_backcast` | GRU | — |
+| `cnngru_*` | CNN-GRU | — |
+| `rescnngru_*` | Res-CNN-GRU | — |
+
+### Estructura de salidas
 
 ```
-raw CSVs
- ├── clean_consumo    → processed/consumo_turistico_inegi_clean.csv
- ├── clean_ivf        → processed/indice_volumen_fisico_inegi_clean.csv
- ├── clean_indicadores→ processed/turismo_indicadores_inegi_clean.csv
- └── plot_timeseries  → plots/consumo_turistico.png, plots/ivf_turismo.png
-
-processed/ (trimestrales, ~131 filas)
- ├── features_consumo → features/features_consumo.csv
- └── features_ivf     → features/features_ivf.csv
-
-features/
- ├── train_consumo    → models/xgboost_consumo.json
- └── train_ivf        → models/xgboost_ivf.json
-
-models/
- ├── evaluate_consumo → metrics/metrics_consumo.json + plots/forecast_consumo.png
- ├── evaluate_ivf     → metrics/metrics_ivf.json + plots/forecast_ivf.png
- ├── interpret_consumo→ plots/shap_consumo.png + plots/stl_consumo.png
- └── interpret_ivf    → plots/shap_ivf.png + plots/stl_ivf.png
+metrics/{exp_name}/metrics_ivf_*.json   ← 15 carpetas × 4 series
+plots/{exp_name}/                        ← 15 carpetas × todos los plots
+plots/general/
+  ivf_overview.png          (todas las series IVF con banda COVID)
+  model_comparison.png      (5 modelos × 4 series, backfill=linear)
+  backfill_impact.png       (5 modelos × 3 métodos de backfill)
 ```
 
 ---
 
-## Métricas y gráficas
+## Arquitecturas de modelo
 
-Ver las métricas actuales del workspace:
-```bash
-dvc metrics show
+| Tipo | Descripción | Archivo |
+|---|---|---|
+| `xgboost` | XGBoost con características tabulares de rezago | `src/models/xgboost_model.py` |
+| `mlp` | MLP (FC 128→64→1, sin secuencias) | `src/models/mlp_model.py` |
+| `gru` | GRU bidimensional (seq_len=16, hidden=128, layers=2) | `src/models/gru_model.py` |
+| `cnn_gru` | Conv1D × 3 + GRU (sin residuales) | `src/models/cnn_gru_model.py` |
+| `res_cnn_gru` | ResConv × 5 + GRU × 3 (arquitectura completa) | `src/models/res_cnn_gru_model.py` |
+
+### Métodos de backfill para indicadores pre-2018
+
+| Método | Descripción |
+|---|---|
+| `zero` | Rellena con ceros (baseline) |
+| `linear` | Regresión lineal extrapolada hacia atrás (recomendado) |
+| `xgboost_backcast` | XGBoost entrenado sobre la serie invertida |
+| `seasonal_mean` | Media del mismo trimestre 2018–2025 |
+| `seasonal_naive` | Valor del mismo trimestre del año más próximo |
+
+---
+
+## Estructura del proyecto
+
 ```
-
-Para explorar experimentos y comparar configuraciones, consulta [EXPERIMENTS.md](EXPERIMENTS.md).
+paper_turismo/
+├── data/
+│   ├── raw/              # CSVs originales del INEGI (en git)
+│   ├── processed/        # CSVs limpios + indicadores con backcast
+│   ├── features/         # Matrices de características por serie IVF
+│   ├── forecasts/        # Pronósticos futuros por serie
+│   └── shap/             # Valores SHAP (.npz) y nombres de features (.json)
+├── models/               # Modelos entrenados y metadatos de división
+├── metrics/              # Métricas por experimento (carpetas {exp_name}/)
+├── plots/                # Gráficas por experimento (carpetas {exp_name}/) + general/
+├── src/
+│   ├── models/           # Registro de modelos
+│   │   ├── base.py
+│   │   ├── xgboost_model.py
+│   │   ├── mlp_model.py
+│   │   ├── gru_model.py
+│   │   ├── cnn_gru_model.py
+│   │   ├── res_cnn_gru_model.py
+│   │   └── __init__.py
+│   ├── clean_*.py
+│   ├── features.py / features_ivf_multi.py
+│   ├── backcast_indicadores.py
+│   ├── train.py / evaluate.py / interpret.py / forecast.py
+│   ├── compare_shap.py
+│   ├── archive_experiment.py      # Archiva resultados del experimento actual
+│   ├── run_all_experiments.py     # Automatiza los 15 experimentos del paper
+│   ├── plot_ivf_overview.py
+│   ├── plot_model_comparison.py
+│   └── plot_backfill_impact.py
+├── dvc.yaml
+├── params.yaml
+└── requirements.txt
+```
 
 ---
 
 ## Agregar un nuevo tipo de modelo
-
-El registro de modelos en `src/models/` permite agregar nuevos modelos sin modificar el pipeline:
 
 1. Crea `src/models/mi_modelo.py` implementando `BaseForecaster` (ver `src/models/base.py`)
 2. Regístralo en `src/models/__init__.py`
 3. Agrega sus hiperparámetros en `params.yaml` bajo `model:`
 4. Cambia `model.type: mi_modelo` en `params.yaml`
 5. Ejecuta `dvc repro`
-
-Para redes neuronales (LSTM, etc.), `get_shap_explainer` debe usar `shap.DeepExplainer` o `shap.KernelExplainer` en lugar de `shap.TreeExplainer`.

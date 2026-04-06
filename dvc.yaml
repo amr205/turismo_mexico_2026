@@ -71,6 +71,10 @@ stages:
       - src/train.py
       - src/models/__init__.py
       - src/models/xgboost_model.py
+      - src/models/mlp_model.py
+      - src/models/gru_model.py
+      - src/models/cnn_gru_model.py
+      - src/models/res_cnn_gru_model.py
       - data/features/features_consumo.csv
       - params.yaml
     params:
@@ -89,6 +93,10 @@ stages:
       - src/train.py
       - src/models/__init__.py
       - src/models/xgboost_model.py
+      - src/models/mlp_model.py
+      - src/models/gru_model.py
+      - src/models/cnn_gru_model.py
+      - src/models/res_cnn_gru_model.py
       - data/features/features_ivf.csv
       - params.yaml
     params:
@@ -107,6 +115,10 @@ stages:
       - src/evaluate.py
       - src/models/__init__.py
       - src/models/xgboost_model.py
+      - src/models/mlp_model.py
+      - src/models/gru_model.py
+      - src/models/cnn_gru_model.py
+      - src/models/res_cnn_gru_model.py
       - data/features/features_consumo.csv
       - models/xgboost_consumo.json
       - models/split_consumo.json
@@ -128,6 +140,10 @@ stages:
       - src/evaluate.py
       - src/models/__init__.py
       - src/models/xgboost_model.py
+      - src/models/mlp_model.py
+      - src/models/gru_model.py
+      - src/models/cnn_gru_model.py
+      - src/models/res_cnn_gru_model.py
       - data/features/features_ivf.csv
       - models/xgboost_ivf.json
       - models/split_ivf.json
@@ -149,6 +165,10 @@ stages:
       - src/interpret.py
       - src/models/__init__.py
       - src/models/xgboost_model.py
+      - src/models/mlp_model.py
+      - src/models/gru_model.py
+      - src/models/cnn_gru_model.py
+      - src/models/res_cnn_gru_model.py
       - data/features/features_consumo.csv
       - data/processed/consumo_turistico_inegi_clean.csv
       - models/xgboost_consumo.json
@@ -170,6 +190,10 @@ stages:
       - src/interpret.py
       - src/models/__init__.py
       - src/models/xgboost_model.py
+      - src/models/mlp_model.py
+      - src/models/gru_model.py
+      - src/models/cnn_gru_model.py
+      - src/models/res_cnn_gru_model.py
       - data/features/features_ivf.csv
       - data/processed/indice_volumen_fisico_inegi_clean.csv
       - models/xgboost_ivf.json
@@ -232,6 +256,10 @@ stages:
         - src/train.py
         - src/models/__init__.py
         - src/models/xgboost_model.py
+        - src/models/mlp_model.py
+        - src/models/gru_model.py
+        - src/models/cnn_gru_model.py
+        - src/models/res_cnn_gru_model.py
         - data/features/features_${item}.csv
         - params.yaml
       params:
@@ -256,6 +284,10 @@ stages:
         - src/evaluate.py
         - src/models/__init__.py
         - src/models/xgboost_model.py
+        - src/models/mlp_model.py
+        - src/models/gru_model.py
+        - src/models/cnn_gru_model.py
+        - src/models/res_cnn_gru_model.py
         - data/features/features_${item}.csv
         - models/xgboost_${item}.json
         - models/split_${item}.json
@@ -283,6 +315,10 @@ stages:
         - src/interpret.py
         - src/models/__init__.py
         - src/models/xgboost_model.py
+        - src/models/mlp_model.py
+        - src/models/gru_model.py
+        - src/models/cnn_gru_model.py
+        - src/models/res_cnn_gru_model.py
         - data/features/features_${item}.csv
         - data/processed/indice_volumen_fisico_inegi_clean.csv
         - models/xgboost_${item}.json
@@ -327,6 +363,15 @@ stages:
             cache: false
         - plots/forecast_future_${item}.png:
             cache: false
+
+  plot_ivf_overview:
+    cmd: python src/plot_ivf_overview.py
+    deps:
+      - src/plot_ivf_overview.py
+      - data/processed/indice_volumen_fisico_inegi_clean.csv
+    outs:
+      - plots/general/ivf_overview.png:
+          cache: false
 
   compare_shap:
     cmd: python src/compare_shap.py

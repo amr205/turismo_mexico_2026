@@ -2,11 +2,15 @@ target:
   consumo: "consumo_turistico_interior_total"
   ivf: "ivf_turistico_total"
 
+experiment:
+  name: "baseline"   # cambiar antes de cada corrida: "xgb_linear", "gru_linear", etc.
+
 features:
   lags: [1, 2, 3, 4]
   rolling_windows: [2, 4]
   add_quarter_dummies: true
   add_trend: true
+  covid_dummy: true          # dummy binario 1 para 2020 Q1–2021 Q4 (ruptura estructural COVID-19)
   train_start_date: null   # null = toda la historia disponible; "2018-01-01" = solo desde indicadores
   indicators:
     aggregation: sum
@@ -30,16 +34,48 @@ model:
     colsample_bytree: 0.8
     objective: "reg:squarederror"
 
-  # lstm:
-  #   hidden_size: 64
-  #   num_layers: 2
-  #   epochs: 100
-  #   learning_rate: 0.001
-  #   sequence_length: 8
+  mlp:
+    hidden_layers: [128, 64]
+    dropout: 0.3
+    epochs: 200
+    learning_rate: 0.001
+    batch_size: 16
+
+  gru:
+    hidden_size: 128
+    num_layers: 2
+    sequence_length: 16
+    dropout: 0.3
+    epochs: 200
+    learning_rate: 0.001
+    batch_size: 16
+
+  cnn_gru:
+    sequence_length: 16
+    gru_hidden_size: 128
+    gru_num_layers: 2
+    conv_channels: [64, 128, 256]
+    fc_layers: [128, 64]
+    dropout: 0.3
+    epochs: 200
+    learning_rate: 0.001
+    batch_size: 16
+
+  res_cnn_gru:
+    sequence_length: 16
+    gru_hidden_size: 256
+    gru_num_layers: 3
+    conv_channels: [32, 64, 128, 256, 256]
+    fc_layers: [256, 128]
+    dropout: 0.3
+    epochs: 200
+    learning_rate: 0.001
+    batch_size: 16
 
 train:
   test_size: 0.2
   random_state: 42
+  test_start_date: "2022-01-01"   # fija el inicio del conjunto de prueba (anula test_size)
 
 evaluate:
   forecast_horizon: 8

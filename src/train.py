@@ -14,6 +14,7 @@ import sys
 import pandas as pd
 import yaml
 
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from src.models import get_model
 
@@ -62,7 +63,11 @@ def train(dataset: str) -> None:
     y = df[target_col]
 
     # División cronológica (nunca aleatoria para series de tiempo)
-    n_train = int(len(df) * (1 - test_size))
+    test_start = params["train"].get("test_start_date")
+    if test_start:
+        n_train = int((df.index < pd.Timestamp(test_start)).sum())
+    else:
+        n_train = int(len(df) * (1 - test_size))
     X_train, X_test = X.iloc[:n_train], X.iloc[n_train:]
     y_train = y.iloc[:n_train]
 

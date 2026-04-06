@@ -1,9 +1,15 @@
 from .xgboost_model import XGBoostForecaster
-# from .lstm_model import LSTMForecaster  # descomentar al agregar LSTM
+from .mlp_model import MLPForecaster
+from .gru_model import GRUForecaster
+from .cnn_gru_model import CNNGRUForecaster
+from .res_cnn_gru_model import ResCNNGRUForecaster
 
 MODEL_REGISTRY = {
     "xgboost": XGBoostForecaster,
-    # "lstm": LSTMForecaster,
+    "mlp": MLPForecaster,
+    "gru": GRUForecaster,
+    "cnn_gru": CNNGRUForecaster,
+    "res_cnn_gru": ResCNNGRUForecaster,
 }
 
 
