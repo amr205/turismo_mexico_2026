@@ -3,6 +3,6 @@
   "n_test": 15,
   "train_end_date": "2021-10-01",
   "test_start_date": "2022-01-01",
-  "model_type": "gru",
+  "model_type": "res_cnn_gru",
   "target_col": "ivf_turistico_bienes"
 }

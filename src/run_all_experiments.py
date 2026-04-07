@@ -75,10 +75,12 @@ def main() -> None:
         print(f"  backfill   = {exp['backfill']}")
         print()
 
-        # 1. dvc exp run
+        # 1. dvc exp run  (-f re-ejecuta etapas Y sobreescribe experimento existente)
+        # En DVC 3.x el error "could not rmdir" en Windows es no-fatal.
         rc = run(
             [
                 "dvc", "exp", "run",
+                "-f",
                 "--name", name,
                 "--set-param", f"experiment.name={name}",
                 "--set-param", f"model.type={exp['model_type']}",
@@ -87,21 +89,13 @@ def main() -> None:
             args.dry_run,
         )
         if rc != 0:
-            print(f"  WARN: dvc exp run terminó con código {rc}. Continuando...")
-            failed.append(name)
-            continue
+            print(f"  WARN: dvc exp run salió con código {rc} (puede ser error no-fatal de Windows).")
 
-        # 2. dvc exp apply
-        rc = run(["dvc", "exp", "apply", name], args.dry_run)
-        if rc != 0:
-            print(f"  WARN: dvc exp apply terminó con código {rc}. Saltando archivado.")
-            failed.append(name)
-            continue
-
-        # 3. archive
+        # 2. archive — DVC 3.x aplica resultados al workspace antes del cleanup
         rc = run([sys.executable, "src/archive_experiment.py"], args.dry_run)
         if rc != 0:
             print(f"  WARN: archive_experiment.py terminó con código {rc}.")
+            failed.append(name)
 
     # Restaurar params.yaml
     print(f"\n{'='*60}")

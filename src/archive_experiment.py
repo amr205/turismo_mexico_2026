@@ -55,8 +55,8 @@ def archive() -> None:
             shutil.copy2(src, dst)
             n_metrics += 1
 
-    print(f"  {n_plots} plots  → {dest_plots}/")
-    print(f"  {n_metrics} métricas → {dest_metrics}/")
+    print(f"  {n_plots} plots  -> {dest_plots}/")
+    print(f"  {n_metrics} metricas -> {dest_metrics}/")
     print("Listo.")
 
 
