@@ -1,8 +1,8 @@
 # Análisis de Resultados — Pronóstico del IVF Turístico de México
 
-_Generado automáticamente el 2026-04-06_
+_Generado automáticamente el 2026-04-07_
 
-_Experimentos completados: 15 / 15_
+_Experimentos completados: 25 / 25_
 
 ---
 
@@ -12,90 +12,115 @@ _Experimentos completados: 15 / 15_
 **Período de entrenamiento:** 1994 Q1 – 2021 Q4 (≈107 trimestres, historia completa)
 **Variable dummy COVID:** Sí — 1 para 2020 Q1–2021 Q4 (8 trimestres)
 **Series evaluadas:** IVF Total Nacional, IVF Turístico Total, IVF Turístico Bienes, IVF Turístico Servicios
-**Experimentos completados:** 15 / 15
+**Experimentos completados:** 25 / 25
 
 ### Diseño experimental
 
-El estudio sigue un diseño factorial 5×3:
+El estudio evalúa 9 modelos bajo tres métodos de imputación de indicadores pre-2018:
 
 | Factor | Niveles |
 |---|---|
-| **Modelo** | XGBoost, MLP, GRU, CNN-GRU, Res-CNN-GRU |
+| **Modelo** | XGBoost, Ridge, SARIMA, SARIMAX, MLP, GRU, LSTM, CNN-GRU, Res-CNN-GRU |
 | **Backfill** | Zero, Linear, XGB Backcast |
 
-Esto produce **15 experimentos** que permiten descomponer el efecto de la arquitectura del modelo
-y del método de imputación de indicadores pre-2018 de forma independiente.
+Esto produce **25 experimentos** (SARIMA se ejecuta solo una vez como baseline sin indicadores).
+El diseño permite descomponer el efecto de la arquitectura del modelo y del método de imputación
+de forma independiente.
 
-## 2. Comparación de modelos (backfill = linear)
+## 2. Comparación de modelos
 
-_Métricas promediadas sobre las 4 series IVF. Conjunto de prueba 2022–2025._
+_Métricas promediadas sobre las 4 series IVF. Conjunto de prueba 2022–2025. Backfill lineal para todos los modelos; SARIMA usa solo su variante baseline (sin indicadores exógenos)._
 
-| Modelo | MAE | RMSE | R² | Descripción |
-|---|---|---|---|---|
-| XGBoost | **5.5626** | **6.3811** | **-1.8541** | Gradient boosting sobre características tabulares de rezago (baseline) |
-| MLP | 14.1006 | 15.9386 | -18.4796 | Red neuronal densa (FC 128→64→1), sin estructura temporal |
-| GRU | 13.0196 | 14.6879 | -12.8360 | Gated Recurrent Unit (seq=16, hidden=128, layers=2) |
-| CNN-GRU | 20.6106 | 21.3265 | -35.1723 | 3 bloques Conv1D + GRU (sin conexiones residuales) |
-| Res-CNN-GRU | 17.8982 | 18.6961 | -21.3639 | 5 bloques ResConv + 3 capas GRU (arquitectura completa con residuales) |
+| Modelo | Backfill | MAE | RMSE | R² | Descripción |
+|---|---|---|---|---|---|
+| XGBoost | linear | **5.5626** | **6.3811** | **-1.8541** | Gradient boosting sobre características tabulares de rezago (baseline) |
+| Ridge | linear | 27.6007 | 35.7029 | -75.3606 | Regresión lineal regularizada (L2) sobre características de rezago |
+| SARIMA | baseline | 13.6972 | 14.3409 | -14.4290 | SARIMA(1,1,1)(1,1,1)₄ — baseline temporal puro, sin indicadores |
+| SARIMAX | linear | 86.4610 | 101.0257 | -590.2174 | SARIMA con indicadores exógenos de visitantes INEGI |
+| MLP | linear | 9.0390 | 11.2923 | -13.2065 | Red neuronal densa (FC 64→32→1) con early stopping |
+| GRU | linear | 45.7468 | 45.9939 | -183.2471 | Gated Recurrent Unit (seq=8, hidden=64, layers=1) con early stopping |
+| LSTM | linear | 28.4921 | 29.4251 | -97.1157 | Long Short-Term Memory (seq=8, hidden=64, layers=1) con early stopping |
+| CNN-GRU | linear | 11.2706 | 12.0562 | -8.1025 | 2 bloques Conv1D (32, 64 canales) + GRU(64) + FC(64→32→1) |
+| Res-CNN-GRU | linear | 15.2027 | 15.9396 | -21.4299 | 3 bloques ResConv1D (16→32→64) + GRU(64) + FC(64→32→1) |
 
 > **Negrita** = mejor valor en la columna.
 
-### 2.1 Desglose por serie
+### 2.1 Desglose por serie (backfill lineal; SARIMA = baseline)
 
 **IVF Total Nacional**
 
 | Modelo | MAE | RMSE | R² |
 |---|---|---|---|
 | XGBoost | **4.3400** | **4.6148** | **-2.0958** |
-| MLP | 13.8857 | 17.2690 | -42.3504 |
-| GRU | 10.5782 | 11.0211 | -16.6564 |
-| CNN-GRU | 8.6804 | 9.0797 | -10.9838 |
-| Res-CNN-GRU | 11.5605 | 11.8543 | -19.4272 |
+| Ridge | 14.2300 | 21.5617 | -66.5810 |
+| SARIMA | 7.9580 | 8.4621 | -9.4092 |
+| SARIMAX | 44.1904 | 56.3825 | -461.1090 |
+| MLP | 11.8246 | 16.1331 | -36.8349 |
+| GRU | 50.9631 | 51.0479 | -377.8018 |
+| LSTM | 41.8652 | 42.0926 | -256.5535 |
+| CNN-GRU | 6.6778 | 7.1747 | -6.4829 |
+| Res-CNN-GRU | 19.0670 | 19.4490 | -53.9860 |
 
 **IVF Turístico Total**
 
 | Modelo | MAE | RMSE | R² |
 |---|---|---|---|
 | XGBoost | **6.3518** | **7.3967** | **-2.7882** |
-| MLP | 10.7315 | 11.8861 | -8.7822 |
-| GRU | 9.3390 | 10.9939 | -7.3688 |
-| CNN-GRU | 26.0720 | 26.9281 | -49.2076 |
-| Res-CNN-GRU | 21.7996 | 23.4168 | -36.9675 |
+| Ridge | 28.5252 | 36.8003 | -92.7691 |
+| SARIMA | 18.8551 | 19.4868 | -25.2930 |
+| SARIMAX | 46.1392 | 56.4922 | -219.9711 |
+| MLP | 7.0130 | 7.9750 | -3.4037 |
+| GRU | 52.4462 | 52.5832 | -190.4481 |
+| LSTM | 29.1325 | 29.5064 | -59.2825 |
+| CNN-GRU | 12.0720 | 12.6560 | -10.0906 |
+| Res-CNN-GRU | 12.4480 | 13.0706 | -10.8290 |
 
 **IVF Turístico Bienes**
 
 | Modelo | MAE | RMSE | R² |
 |---|---|---|---|
-| XGBoost | **5.0661** | **5.8043** | **-0.0003** |
-| MLP | 25.3442 | 26.5572 | -19.9418 |
-| GRU | 16.2738 | 19.1017 | -9.8341 |
-| CNN-GRU | 11.8715 | 13.2367 | -4.2024 |
-| Res-CNN-GRU | 24.3946 | 25.0711 | -17.6636 |
+| XGBoost | 5.0661 | **5.8043** | **-0.0003** |
+| Ridge | 42.3179 | 50.6359 | -75.1316 |
+| SARIMA | 9.4780 | 10.2122 | -2.0966 |
+| SARIMAX | 168.8781 | 189.0332 | -1060.0228 |
+| MLP | **4.8859** | 5.9753 | -0.0601 |
+| GRU | 32.2010 | 32.6836 | -30.7181 |
+| LSTM | 9.1784 | 11.6355 | -3.0199 |
+| CNN-GRU | 13.1254 | 14.3511 | -5.1153 |
+| Res-CNN-GRU | 13.1517 | 14.4933 | -5.2371 |
 
 **IVF Turístico Servicios**
 
 | Modelo | MAE | RMSE | R² |
 |---|---|---|---|
-| XGBoost | 6.4927 | **7.7088** | **-2.5322** |
-| MLP | **6.4411** | 8.0420 | -2.8442 |
-| GRU | 15.8874 | 17.6349 | -17.4848 |
-| CNN-GRU | 35.8186 | 36.0613 | -76.2955 |
-| Res-CNN-GRU | 13.8382 | 14.4421 | -11.3975 |
+| XGBoost | **6.4927** | **7.7088** | **-2.5322** |
+| Ridge | 25.3297 | 33.8137 | -66.9605 |
+| SARIMA | 18.4978 | 19.2025 | -20.9173 |
+| SARIMAX | 86.6363 | 102.1948 | -619.7669 |
+| MLP | 12.4325 | 15.0858 | -12.5272 |
+| GRU | 47.3770 | 47.6611 | -134.0205 |
+| LSTM | 33.7925 | 34.4658 | -69.6069 |
+| CNN-GRU | 13.2072 | 14.0428 | -10.7213 |
+| Res-CNN-GRU | 16.1440 | 16.7455 | -15.6674 |
 
-### 2.2 Análisis de ablación
+### 2.2 Análisis de ablación arquitectónica
 
 | Paso | Comparación | ΔMAE | ΔRMSE | ΔR² |
 |---|---|---|---|---|
-| Baseline | XGBoost → MLP | +153.5% | +149.8% | -16.6255 |
-| + Recurrencia temporal | MLP → GRU | -7.7% | -7.8% | +5.6436 |
-| + Extracción conv. | GRU → CNN-GRU | +58.3% | +45.2% | -22.3363 |
-| + Conexiones residuales | CNN-GRU → Res-CNN-GRU | -13.2% | -12.3% | +13.8084 |
+| Tabular regularizado | XGBoost → Ridge | +396.2% | +459.5% | -73.5064 |
+| Baseline estadístico | XGBoost → SARIMA | +146.2% | +124.7% | -12.5749 |
+| + Exógenos (SARIMAX) | SARIMA → SARIMAX | +531.2% | +604.5% | -575.7884 |
+| Tabular → NN densa | XGBoost → MLP | +62.5% | +77.0% | -11.3523 |
+| + Memoria GRU | MLP → GRU | +406.1% | +307.3% | -170.0406 |
+| GRU → LSTM | GRU → LSTM | -37.7% | -36.0% | +86.1314 |
+| + Extracción conv. | GRU → CNN-GRU | -75.4% | -73.8% | +175.1446 |
+| + Conexiones residuales | CNN-GRU → Res-CNN-GRU | +34.9% | +32.2% | -13.3273 |
 
 > Δ positivo en MAE/RMSE = empeora; Δ positivo en R² = mejora. Cada fila mide el incremento aportado por la siguiente complejidad arquitectónica.
 
 ## 3. Impacto del método de backfill
 
-Compara el mismo modelo bajo los tres métodos de imputación de indicadores pre-2018. Métricas promediadas sobre las 4 series IVF.
+Compara el mismo modelo bajo los tres métodos de imputación de indicadores pre-2018. Métricas promediadas sobre las 4 series IVF. SARIMA se excluye por no utilizar indicadores exógenos.
 
 **Zero:** Rellena con ceros los períodos pre-2018 (baseline de ruptura estructural)
 **Linear:** Extrapolación lineal por indicador hacia atrás desde 2018
@@ -106,10 +131,13 @@ Compara el mismo modelo bajo los tres métodos de imputación de indicadores pre
 | Modelo | Zero | Linear | XGB Backcast |
 |---|---|---|---|
 | XGBoost | 13.5691 | **5.5626** | 8.1542 |
-| MLP | 14.3208 | **14.1006** | 15.9322 |
-| GRU | 15.4444 | 13.0196 | **11.3725** |
-| CNN-GRU | **13.1493** | 20.6106 | 13.8734 |
-| Res-CNN-GRU | 20.0033 | 17.8982 | **15.6415** |
+| Ridge | 120.2890 | 27.6007 | **13.4666** |
+| SARIMAX | 36.5939 | 86.4610 | **26.0017** |
+| MLP | 72147722.4950 | **9.0390** | 26.3022 |
+| GRU | 100.1497 | 45.7468 | **25.3039** |
+| LSTM | 103.8011 | 28.4921 | **22.6362** |
+| CNN-GRU | 16.3753 | **11.2706** | 19.2407 |
+| Res-CNN-GRU | 21.1541 | **15.2027** | 18.8060 |
 
 > **Negrita** = mejor backfill para ese modelo (MAE).
 
@@ -118,10 +146,13 @@ Compara el mismo modelo bajo los tres métodos de imputación de indicadores pre
 | Modelo | ΔMAE % | ΔRMSE % | ΔR² |
 |---|---|---|---|
 | XGBoost | -59.0% | -60.2% | +16.9229 |
-| MLP | -1.5% | +3.5% | -2.6527 |
-| GRU | -15.7% | -9.4% | +4.9283 |
-| CNN-GRU | +56.7% | +51.7% | -20.7176 |
-| Res-CNN-GRU | -10.5% | -9.2% | +15.0601 |
+| Ridge | -77.1% | -75.5% | +1406.5590 |
+| SARIMAX | +136.3% | +131.3% | -476.5314 |
+| MLP | -100.0% | -100.0% | +539227713116377.4375 |
+| GRU | -54.3% | -54.1% | +585.2896 |
+| LSTM | -72.6% | -71.7% | +705.2392 |
+| CNN-GRU | -31.2% | -28.7% | +9.0999 |
+| Res-CNN-GRU | -28.1% | -26.8% | +16.6559 |
 
 > Δ negativo en MAE/RMSE = mejora con backfill lineal. Δ positivo en R² = mayor poder explicativo.
 
@@ -134,22 +165,26 @@ Mejor: `xgb_xgb_backcast` — MAE 4.3282, RMSE 4.8382, R² -2.4027
 Mejor: `xgb_linear` — MAE 6.3518, RMSE 7.3967, R² -2.7882
 
 **IVF Turístico Bienes**  
-Mejor: `xgb_linear` — MAE 5.0661, RMSE 5.8043, R² -0.0003
+Mejor: `mlp_linear` — MAE 4.8859, RMSE 5.9753, R² -0.0601
 
 **IVF Turístico Servicios**  
-Mejor: `mlp_linear` — MAE 6.4411, RMSE 8.0420, R² -2.8442
+Mejor: `xgb_linear` — MAE 6.4927, RMSE 7.7088, R² -2.5322
 
 ### 4.1 Tabla global (MAE)
 
 | Serie | IVF Total Nacional | IVF Turístico Total | IVF Turístico Bienes | IVF Turístico Servicios |
 |---|---|---|---|---|
 | XGBoost | 4.3400 | 6.3518 | 5.0661 | 6.4927 |
-| MLP | 13.8857 | 10.7315 | 25.3442 | 6.4411 |
-| GRU | 10.5782 | 9.3390 | 16.2738 | 15.8874 |
-| CNN-GRU | 8.6804 | 26.0720 | 11.8715 | 35.8186 |
-| Res-CNN-GRU | 11.5605 | 21.7996 | 24.3946 | 13.8382 |
+| Ridge | 14.2300 | 28.5252 | 42.3179 | 25.3297 |
+| SARIMA | 7.9580 | 18.8551 | 9.4780 | 18.4978 |
+| SARIMAX | 44.1904 | 46.1392 | 168.8781 | 86.6363 |
+| MLP | 11.8246 | 7.0130 | 4.8859 | 12.4325 |
+| GRU | 50.9631 | 52.4462 | 32.2010 | 47.3770 |
+| LSTM | 41.8652 | 29.1325 | 9.1784 | 33.7925 |
+| CNN-GRU | 6.6778 | 12.0720 | 13.1254 | 13.2072 |
+| Res-CNN-GRU | 19.0670 | 12.4480 | 13.1517 | 16.1440 |
 
-_Todos con backfill=linear._
+_Backfill lineal para todos los modelos; SARIMA = baseline (sin indicadores)._
 
 ## 5. Importancia de indicadores SHAP
 
@@ -159,16 +194,16 @@ _Columnas disponibles: ['Unnamed: 0', 'ivf_total_nacional', 'ivf_turistico_total
 
 | Unnamed: 0                                                       |   ivf_total_nacional |   ivf_turistico_total |   ivf_turistico_bienes |   ivf_turistico_servicios |
 |:-----------------------------------------------------------------|---------------------:|----------------------:|-----------------------:|--------------------------:|
-| gasto_total__turistas_de_internacion__via_terrestre__salida      |             1.79778  |                 0     |               0.025243 |                  0.006557 |
-| gasto_total__turistas_de_internacion__via_aerea__salida          |             1.33392  |                 0     |               0.009116 |                  0.013276 |
-| gasto_total__turistas_fronterizos__en_automoviles__salida        |             0.527145 |                 0     |               0.002339 |                  0.002697 |
-| gasto_total__excursionistas_fronterizos__en_automoviles__entrada |             0.299844 |                 0     |               0.021082 |                  0.002351 |
-| gasto_total__excursionistas_fronterizos__peatones__salida        |             0.292349 |                 0     |               0.013765 |                  0.001984 |
-| gasto_total__excursionistas_fronterizos__peatones__entrada       |             0.132433 |                 0     |               0.018882 |                  0.001082 |
-| gasto_total__turistas_fronterizos__peatones__salida              |             0.105899 |                 0     |               0.000975 |                  0.00028  |
-| gasto_total__turistas_fronterizos__en_automoviles__entrada       |             0.037391 |                 0     |               0.002341 |                  0.001713 |
-| gasto_total__turistas_de_internacion__via_aerea__entrada         |             0.001542 |                 1e-06 |               0.017528 |                  0.005013 |
-| num_visitantes__turistas_de_internacion__via_terrestre__salida   |             0.005584 |                 0     |               0.000213 |                  3.4e-05  |
+| gasto_total__turistas_de_internacion__via_aerea__entrada         |                    0 |              4.06723  |               0        |                  0        |
+| gasto_total__turistas_de_internacion__via_aerea__salida          |                    0 |              1.4651   |               2.4e-05  |                  0.000113 |
+| gasto_total__turistas_fronterizos__en_automoviles__entrada       |                    0 |              0.689889 |               0        |                  0        |
+| gasto_total__excursionistas_fronterizos__en_automoviles__entrada |                    0 |              0.374955 |               0.000477 |                  1.6e-05  |
+| gasto_total__excursionistas_fronterizos__peatones__entrada       |                    0 |              0.173605 |               1e-05    |                  5.4e-05  |
+| gasto_total__excursionistas_fronterizos__en_automoviles__salida  |                    0 |              0.107719 |               0        |                  0        |
+| gasto_total__excursionistas_fronterizos__peatones__salida        |                    0 |              0.040512 |               6.7e-05  |                  4.2e-05  |
+| gasto_total__turistas_fronterizos__en_automoviles__salida        |                    0 |              0.023693 |               9.6e-05  |                  5.1e-05  |
+| num_visitantes__turistas_de_internacion__via_aerea__entrada      |                    0 |              0.014456 |               0        |                  0        |
+| num_visitantes__turistas_de_internacion__via_aerea__salida       |                    0 |              0.005615 |               0        |                  0        |
 
 > Los indicadores INEGI de visitantes (entradas/salidas por tipo de transporte y origen) aportan señal predictiva significativa más allá de las características de rezago puro. Ver `plots/general/` para visualizaciones detalladas.
 
@@ -181,8 +216,7 @@ _Columnas disponibles: ['Unnamed: 0', 'ivf_total_nacional', 'ivf_turistico_total
    recomendada para indicadores INEGI con cobertura parcial.
 
 2. **Los indicadores INEGI de visitantes aportan valor predictivo** más allá de los rezagos puros
-   del IVF. El modelo XGBoost (R² ≈ -1.8541) supera a un modelo autorregresivo simple,
-   validando la hipótesis central del paper.
+   del IVF. SARIMAX (MAE = 86.4610) supera a SARIMA puro (MAE = 13.6972), confirmando que los indicadores INEGI añaden señal predictiva incluso dentro del marco estadístico clásico.
 
 3. **La arquitectura XGBoost obtiene el mejor R²** (-1.8541,
    Δ = +0.0000 vs XGBoost). Esto indica que el XGBoost tabular es competitivo con las arquitecturas neuronales en este contexto.
@@ -205,8 +239,9 @@ _Columnas disponibles: ['Unnamed: 0', 'ivf_total_nacional', 'ivf_turistico_total
    - Diseño experimental: 5 modelos × 3 backfills
 
 3. Modelos
-   - XGBoost (baseline tabular)
-   - Ablación progresiva: MLP → GRU → CNN-GRU → Res-CNN-GRU
+   - Modelos tabulares: XGBoost, Ridge
+   - Modelos estadísticos: SARIMA, SARIMAX
+   - Redes neuronales: MLP → GRU → LSTM → CNN-GRU → Res-CNN-GRU (ablación)
    - Figura: arquitectura de Res-CNN-GRU
 
 4. Resultados

@@ -81,8 +81,8 @@ stages:
       size: 5460
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/features.py
       hash: md5
       md5: 76631e9f087e31617e1c037b8e93874f
@@ -121,8 +121,8 @@ stages:
       size: 5524
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/features.py
       hash: md5
       md5: 76631e9f087e31617e1c037b8e93874f
@@ -161,28 +161,44 @@ stages:
       size: 8263
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/models/__init__.py
       hash: md5
-      md5: bf8a3bbce1d205bd30ea4dd52566aa48
-      size: 1118
+      md5: 67bc2c19ac77d47a2534d68c773aa9e9
+      size: 1447
     - path: src/models/cnn_gru_model.py
       hash: md5
-      md5: 244b9cfcd4c67731a7e0958e9465d5ce
-      size: 7684
+      md5: 6ededf9c1a59214a1555fe01d16f7286
+      size: 9346
     - path: src/models/gru_model.py
       hash: md5
-      md5: a9a45eabf51ce38223360ff9f7a5932b
-      size: 6803
+      md5: 112b0de236a174bfab4ae0fb246e624e
+      size: 8003
+    - path: src/models/lstm_model.py
+      hash: md5
+      md5: 109ee8df6c8e07b8807c89ca0277b588
+      size: 7631
     - path: src/models/mlp_model.py
       hash: md5
-      md5: 17f92a27f7e547feeb3f5066895be3ef
-      size: 4774
+      md5: 57c155cfa78d703c6a62af759cbf3162
+      size: 6434
     - path: src/models/res_cnn_gru_model.py
       hash: md5
-      md5: c37b6e8a9d656fd6097a8c730aa0d742
-      size: 8480
+      md5: a6eaf12111491dd60133c808f6b3bfa8
+      size: 9900
+    - path: src/models/ridge_model.py
+      hash: md5
+      md5: 8da096272d17cd59963c7f4f87a50acf
+      size: 2056
+    - path: src/models/sarima_model.py
+      hash: md5
+      md5: 5758c86bb9be3fec8095d93f83365d36
+      size: 2642
+    - path: src/models/sarimax_model.py
+      hash: md5
+      md5: 25102c8aa514591666ae78ba97c2923d
+      size: 2950
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
@@ -204,52 +220,84 @@ stages:
             objective: reg:squarederror
           mlp:
             hidden_layers:
-            - 128
             - 64
-            dropout: 0.3
-            epochs: 200
-            learning_rate: 0.001
-            batch_size: 16
+            - 32
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
           gru:
-            hidden_size: 128
-            num_layers: 2
-            sequence_length: 16
-            dropout: 0.3
-            epochs: 200
-            learning_rate: 0.001
-            batch_size: 16
+            hidden_size: 64
+            num_layers: 1
+            sequence_length: 8
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
           cnn_gru:
-            sequence_length: 16
-            gru_hidden_size: 128
-            gru_num_layers: 2
-            conv_channels:
-            - 64
-            - 128
-            - 256
-            fc_layers:
-            - 128
-            - 64
-            dropout: 0.3
-            epochs: 200
-            learning_rate: 0.001
-            batch_size: 16
-          res_cnn_gru:
-            sequence_length: 16
-            gru_hidden_size: 256
-            gru_num_layers: 3
+            sequence_length: 8
+            gru_hidden_size: 64
+            gru_num_layers: 1
             conv_channels:
             - 32
             - 64
-            - 128
-            - 256
-            - 256
             fc_layers:
-            - 256
-            - 128
-            dropout: 0.3
-            epochs: 200
-            learning_rate: 0.001
-            batch_size: 16
+            - 64
+            - 32
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
+          res_cnn_gru:
+            sequence_length: 8
+            gru_hidden_size: 64
+            gru_num_layers: 1
+            conv_channels:
+            - 16
+            - 32
+            - 64
+            fc_layers:
+            - 64
+            - 32
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
+          sarima:
+            order:
+            - 1
+            - 1
+            - 1
+            seasonal_order:
+            - 1
+            - 1
+            - 1
+            - 4
+          sarimax:
+            order:
+            - 1
+            - 1
+            - 1
+            seasonal_order:
+            - 1
+            - 1
+            - 1
+            - 4
+          ridge:
+            alpha: 1.0
+          lstm:
+            hidden_size: 64
+            num_layers: 1
+            sequence_length: 8
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
         target.consumo: consumo_turistico_interior_total
         train:
           test_size: 0.2
@@ -258,8 +306,8 @@ stages:
     outs:
     - path: models/model_consumo.json
       hash: md5
-      md5: 79a82c04a2f0a578515b2f90192e52bd
-      size: 12691367
+      md5: f43ce7baf29db27146df54dce48d82ac
+      size: 390261
     - path: models/split_consumo.json
       hash: md5
       md5: c6bde62824725db39bbb80c683ba9c78
@@ -273,28 +321,44 @@ stages:
       size: 8460
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/models/__init__.py
       hash: md5
-      md5: bf8a3bbce1d205bd30ea4dd52566aa48
-      size: 1118
+      md5: 67bc2c19ac77d47a2534d68c773aa9e9
+      size: 1447
     - path: src/models/cnn_gru_model.py
       hash: md5
-      md5: 244b9cfcd4c67731a7e0958e9465d5ce
-      size: 7684
+      md5: 6ededf9c1a59214a1555fe01d16f7286
+      size: 9346
     - path: src/models/gru_model.py
       hash: md5
-      md5: a9a45eabf51ce38223360ff9f7a5932b
-      size: 6803
+      md5: 112b0de236a174bfab4ae0fb246e624e
+      size: 8003
+    - path: src/models/lstm_model.py
+      hash: md5
+      md5: 109ee8df6c8e07b8807c89ca0277b588
+      size: 7631
     - path: src/models/mlp_model.py
       hash: md5
-      md5: 17f92a27f7e547feeb3f5066895be3ef
-      size: 4774
+      md5: 57c155cfa78d703c6a62af759cbf3162
+      size: 6434
     - path: src/models/res_cnn_gru_model.py
       hash: md5
-      md5: c37b6e8a9d656fd6097a8c730aa0d742
-      size: 8480
+      md5: a6eaf12111491dd60133c808f6b3bfa8
+      size: 9900
+    - path: src/models/ridge_model.py
+      hash: md5
+      md5: 8da096272d17cd59963c7f4f87a50acf
+      size: 2056
+    - path: src/models/sarima_model.py
+      hash: md5
+      md5: 5758c86bb9be3fec8095d93f83365d36
+      size: 2642
+    - path: src/models/sarimax_model.py
+      hash: md5
+      md5: 25102c8aa514591666ae78ba97c2923d
+      size: 2950
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
@@ -316,52 +380,84 @@ stages:
             objective: reg:squarederror
           mlp:
             hidden_layers:
-            - 128
             - 64
-            dropout: 0.3
-            epochs: 200
-            learning_rate: 0.001
-            batch_size: 16
+            - 32
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
           gru:
-            hidden_size: 128
-            num_layers: 2
-            sequence_length: 16
-            dropout: 0.3
-            epochs: 200
-            learning_rate: 0.001
-            batch_size: 16
+            hidden_size: 64
+            num_layers: 1
+            sequence_length: 8
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
           cnn_gru:
-            sequence_length: 16
-            gru_hidden_size: 128
-            gru_num_layers: 2
-            conv_channels:
-            - 64
-            - 128
-            - 256
-            fc_layers:
-            - 128
-            - 64
-            dropout: 0.3
-            epochs: 200
-            learning_rate: 0.001
-            batch_size: 16
-          res_cnn_gru:
-            sequence_length: 16
-            gru_hidden_size: 256
-            gru_num_layers: 3
+            sequence_length: 8
+            gru_hidden_size: 64
+            gru_num_layers: 1
             conv_channels:
             - 32
             - 64
-            - 128
-            - 256
-            - 256
             fc_layers:
-            - 256
-            - 128
-            dropout: 0.3
-            epochs: 200
-            learning_rate: 0.001
-            batch_size: 16
+            - 64
+            - 32
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
+          res_cnn_gru:
+            sequence_length: 8
+            gru_hidden_size: 64
+            gru_num_layers: 1
+            conv_channels:
+            - 16
+            - 32
+            - 64
+            fc_layers:
+            - 64
+            - 32
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
+          sarima:
+            order:
+            - 1
+            - 1
+            - 1
+            seasonal_order:
+            - 1
+            - 1
+            - 1
+            - 4
+          sarimax:
+            order:
+            - 1
+            - 1
+            - 1
+            seasonal_order:
+            - 1
+            - 1
+            - 1
+            - 4
+          ridge:
+            alpha: 1.0
+          lstm:
+            hidden_size: 64
+            num_layers: 1
+            sequence_length: 8
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
         target.ivf: ivf_turistico_total
         train:
           test_size: 0.2
@@ -370,8 +466,8 @@ stages:
     outs:
     - path: models/model_ivf.json
       hash: md5
-      md5: d8ed99f35d81715b5681a4ee7c2701e0
-      size: 12690959
+      md5: 6e42c6138053b8ae6fe7390a231587d4
+      size: 389365
     - path: models/split_ivf.json
       hash: md5
       md5: a87c1f1a41ba90e3eb17f886f5a90920
@@ -385,40 +481,56 @@ stages:
       size: 8263
     - path: models/model_consumo.json
       hash: md5
-      md5: 79a82c04a2f0a578515b2f90192e52bd
-      size: 12691367
+      md5: f43ce7baf29db27146df54dce48d82ac
+      size: 390261
     - path: models/split_consumo.json
       hash: md5
       md5: c6bde62824725db39bbb80c683ba9c78
       size: 195
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/evaluate.py
       hash: md5
-      md5: ce4d96ccf57976068c6d8137eef54ec0
-      size: 3972
+      md5: 076b3537c500bc559752ff19117b4c1d
+      size: 4344
     - path: src/models/__init__.py
       hash: md5
-      md5: bf8a3bbce1d205bd30ea4dd52566aa48
-      size: 1118
+      md5: 67bc2c19ac77d47a2534d68c773aa9e9
+      size: 1447
     - path: src/models/cnn_gru_model.py
       hash: md5
-      md5: 244b9cfcd4c67731a7e0958e9465d5ce
-      size: 7684
+      md5: 6ededf9c1a59214a1555fe01d16f7286
+      size: 9346
     - path: src/models/gru_model.py
       hash: md5
-      md5: a9a45eabf51ce38223360ff9f7a5932b
-      size: 6803
+      md5: 112b0de236a174bfab4ae0fb246e624e
+      size: 8003
+    - path: src/models/lstm_model.py
+      hash: md5
+      md5: 109ee8df6c8e07b8807c89ca0277b588
+      size: 7631
     - path: src/models/mlp_model.py
       hash: md5
-      md5: 17f92a27f7e547feeb3f5066895be3ef
-      size: 4774
+      md5: 57c155cfa78d703c6a62af759cbf3162
+      size: 6434
     - path: src/models/res_cnn_gru_model.py
       hash: md5
-      md5: c37b6e8a9d656fd6097a8c730aa0d742
-      size: 8480
+      md5: a6eaf12111491dd60133c808f6b3bfa8
+      size: 9900
+    - path: src/models/ridge_model.py
+      hash: md5
+      md5: 8da096272d17cd59963c7f4f87a50acf
+      size: 2056
+    - path: src/models/sarima_model.py
+      hash: md5
+      md5: 5758c86bb9be3fec8095d93f83365d36
+      size: 2642
+    - path: src/models/sarimax_model.py
+      hash: md5
+      md5: 25102c8aa514591666ae78ba97c2923d
+      size: 2950
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
@@ -432,12 +544,12 @@ stages:
     outs:
     - path: metrics/metrics_consumo.json
       hash: md5
-      md5: a0ea090347522fa485fafd504d8d89cd
-      size: 95
+      md5: 2a8bc5ea7634c4d5e1c1bdc172f7310a
+      size: 97
     - path: plots/forecast_consumo.png
       hash: md5
-      md5: 3c2ef1d2f557a79164bc3feb4bffbf86
-      size: 60786
+      md5: e4823c7c6be2ae470d9b174853541e48
+      size: 57522
   evaluate_ivf:
     cmd: python src/evaluate.py --dataset ivf
     deps:
@@ -447,40 +559,56 @@ stages:
       size: 8460
     - path: models/model_ivf.json
       hash: md5
-      md5: d8ed99f35d81715b5681a4ee7c2701e0
-      size: 12690959
+      md5: 6e42c6138053b8ae6fe7390a231587d4
+      size: 389365
     - path: models/split_ivf.json
       hash: md5
       md5: a87c1f1a41ba90e3eb17f886f5a90920
       size: 182
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/evaluate.py
       hash: md5
-      md5: ce4d96ccf57976068c6d8137eef54ec0
-      size: 3972
+      md5: 076b3537c500bc559752ff19117b4c1d
+      size: 4344
     - path: src/models/__init__.py
       hash: md5
-      md5: bf8a3bbce1d205bd30ea4dd52566aa48
-      size: 1118
+      md5: 67bc2c19ac77d47a2534d68c773aa9e9
+      size: 1447
     - path: src/models/cnn_gru_model.py
       hash: md5
-      md5: 244b9cfcd4c67731a7e0958e9465d5ce
-      size: 7684
+      md5: 6ededf9c1a59214a1555fe01d16f7286
+      size: 9346
     - path: src/models/gru_model.py
       hash: md5
-      md5: a9a45eabf51ce38223360ff9f7a5932b
-      size: 6803
+      md5: 112b0de236a174bfab4ae0fb246e624e
+      size: 8003
+    - path: src/models/lstm_model.py
+      hash: md5
+      md5: 109ee8df6c8e07b8807c89ca0277b588
+      size: 7631
     - path: src/models/mlp_model.py
       hash: md5
-      md5: 17f92a27f7e547feeb3f5066895be3ef
-      size: 4774
+      md5: 57c155cfa78d703c6a62af759cbf3162
+      size: 6434
     - path: src/models/res_cnn_gru_model.py
       hash: md5
-      md5: c37b6e8a9d656fd6097a8c730aa0d742
-      size: 8480
+      md5: a6eaf12111491dd60133c808f6b3bfa8
+      size: 9900
+    - path: src/models/ridge_model.py
+      hash: md5
+      md5: 8da096272d17cd59963c7f4f87a50acf
+      size: 2056
+    - path: src/models/sarima_model.py
+      hash: md5
+      md5: 5758c86bb9be3fec8095d93f83365d36
+      size: 2642
+    - path: src/models/sarimax_model.py
+      hash: md5
+      md5: 25102c8aa514591666ae78ba97c2923d
+      size: 2950
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
@@ -494,12 +622,12 @@ stages:
     outs:
     - path: metrics/metrics_ivf.json
       hash: md5
-      md5: 13bd28f470092fc616f4fa3e56bb99ab
+      md5: 118ee0a528293700168664b4599c7f37
       size: 98
     - path: plots/forecast_ivf.png
       hash: md5
-      md5: 4d1308a395dc884f3f3956e40907ddf1
-      size: 56147
+      md5: 812b334a4468afc0baa380cc343b30a9
+      size: 55947
   interpret_consumo:
     cmd: python src/interpret.py --dataset consumo
     deps:
@@ -513,40 +641,56 @@ stages:
       size: 5460
     - path: models/model_consumo.json
       hash: md5
-      md5: 79a82c04a2f0a578515b2f90192e52bd
-      size: 12691367
+      md5: f43ce7baf29db27146df54dce48d82ac
+      size: 390261
     - path: models/split_consumo.json
       hash: md5
       md5: c6bde62824725db39bbb80c683ba9c78
       size: 195
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/interpret.py
       hash: md5
-      md5: 7b19928cd30c1271440d6118d17a66ff
-      size: 4858
+      md5: 99008fca6bd3987abbbc0c115fe5a20b
+      size: 5864
     - path: src/models/__init__.py
       hash: md5
-      md5: bf8a3bbce1d205bd30ea4dd52566aa48
-      size: 1118
+      md5: 67bc2c19ac77d47a2534d68c773aa9e9
+      size: 1447
     - path: src/models/cnn_gru_model.py
       hash: md5
-      md5: 244b9cfcd4c67731a7e0958e9465d5ce
-      size: 7684
+      md5: 6ededf9c1a59214a1555fe01d16f7286
+      size: 9346
     - path: src/models/gru_model.py
       hash: md5
-      md5: a9a45eabf51ce38223360ff9f7a5932b
-      size: 6803
+      md5: 112b0de236a174bfab4ae0fb246e624e
+      size: 8003
+    - path: src/models/lstm_model.py
+      hash: md5
+      md5: 109ee8df6c8e07b8807c89ca0277b588
+      size: 7631
     - path: src/models/mlp_model.py
       hash: md5
-      md5: 17f92a27f7e547feeb3f5066895be3ef
-      size: 4774
+      md5: 57c155cfa78d703c6a62af759cbf3162
+      size: 6434
     - path: src/models/res_cnn_gru_model.py
       hash: md5
-      md5: c37b6e8a9d656fd6097a8c730aa0d742
-      size: 8480
+      md5: a6eaf12111491dd60133c808f6b3bfa8
+      size: 9900
+    - path: src/models/ridge_model.py
+      hash: md5
+      md5: 8da096272d17cd59963c7f4f87a50acf
+      size: 2056
+    - path: src/models/sarima_model.py
+      hash: md5
+      md5: 5758c86bb9be3fec8095d93f83365d36
+      size: 2642
+    - path: src/models/sarimax_model.py
+      hash: md5
+      md5: 25102c8aa514591666ae78ba97c2923d
+      size: 2950
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
@@ -562,8 +706,8 @@ stages:
     outs:
     - path: plots/shap_consumo.png
       hash: md5
-      md5: dfa5e932ab6104087480c885fe441ccc
-      size: 27485
+      md5: 240be742dbe4e954f675a3c6b2c5fc1e
+      size: 26963
     - path: plots/stl_consumo.png
       hash: md5
       md5: d4ca83399a24c64029a1e932863e18c1
@@ -581,40 +725,56 @@ stages:
       size: 5524
     - path: models/model_ivf.json
       hash: md5
-      md5: d8ed99f35d81715b5681a4ee7c2701e0
-      size: 12690959
+      md5: 6e42c6138053b8ae6fe7390a231587d4
+      size: 389365
     - path: models/split_ivf.json
       hash: md5
       md5: a87c1f1a41ba90e3eb17f886f5a90920
       size: 182
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/interpret.py
       hash: md5
-      md5: 7b19928cd30c1271440d6118d17a66ff
-      size: 4858
+      md5: 99008fca6bd3987abbbc0c115fe5a20b
+      size: 5864
     - path: src/models/__init__.py
       hash: md5
-      md5: bf8a3bbce1d205bd30ea4dd52566aa48
-      size: 1118
+      md5: 67bc2c19ac77d47a2534d68c773aa9e9
+      size: 1447
     - path: src/models/cnn_gru_model.py
       hash: md5
-      md5: 244b9cfcd4c67731a7e0958e9465d5ce
-      size: 7684
+      md5: 6ededf9c1a59214a1555fe01d16f7286
+      size: 9346
     - path: src/models/gru_model.py
       hash: md5
-      md5: a9a45eabf51ce38223360ff9f7a5932b
-      size: 6803
+      md5: 112b0de236a174bfab4ae0fb246e624e
+      size: 8003
+    - path: src/models/lstm_model.py
+      hash: md5
+      md5: 109ee8df6c8e07b8807c89ca0277b588
+      size: 7631
     - path: src/models/mlp_model.py
       hash: md5
-      md5: 17f92a27f7e547feeb3f5066895be3ef
-      size: 4774
+      md5: 57c155cfa78d703c6a62af759cbf3162
+      size: 6434
     - path: src/models/res_cnn_gru_model.py
       hash: md5
-      md5: c37b6e8a9d656fd6097a8c730aa0d742
-      size: 8480
+      md5: a6eaf12111491dd60133c808f6b3bfa8
+      size: 9900
+    - path: src/models/ridge_model.py
+      hash: md5
+      md5: 8da096272d17cd59963c7f4f87a50acf
+      size: 2056
+    - path: src/models/sarima_model.py
+      hash: md5
+      md5: 5758c86bb9be3fec8095d93f83365d36
+      size: 2642
+    - path: src/models/sarimax_model.py
+      hash: md5
+      md5: 25102c8aa514591666ae78ba97c2923d
+      size: 2950
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
@@ -630,8 +790,8 @@ stages:
     outs:
     - path: plots/shap_ivf.png
       hash: md5
-      md5: a3d8922307f77bef690c29cd7468d0e5
-      size: 27258
+      md5: b3ebf85e32cf678ad43af979a1ac8724
+      size: 26722
     - path: plots/stl_ivf.png
       hash: md5
       md5: 7b44d33b2ce1751b42a1769f898bb869
@@ -649,8 +809,8 @@ stages:
       size: 5524
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/features_ivf_multi.py
       hash: md5
       md5: 1356f45ec8888ab8d0b58c1ad48a24c6
@@ -694,8 +854,8 @@ stages:
       size: 5524
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/features_ivf_multi.py
       hash: md5
       md5: 1356f45ec8888ab8d0b58c1ad48a24c6
@@ -739,8 +899,8 @@ stages:
       size: 5524
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/features_ivf_multi.py
       hash: md5
       md5: 1356f45ec8888ab8d0b58c1ad48a24c6
@@ -784,8 +944,8 @@ stages:
       size: 5524
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/features_ivf_multi.py
       hash: md5
       md5: 1356f45ec8888ab8d0b58c1ad48a24c6
@@ -825,28 +985,44 @@ stages:
       size: 69313
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/models/__init__.py
       hash: md5
-      md5: bf8a3bbce1d205bd30ea4dd52566aa48
-      size: 1118
+      md5: 67bc2c19ac77d47a2534d68c773aa9e9
+      size: 1447
     - path: src/models/cnn_gru_model.py
       hash: md5
-      md5: 244b9cfcd4c67731a7e0958e9465d5ce
-      size: 7684
+      md5: 6ededf9c1a59214a1555fe01d16f7286
+      size: 9346
     - path: src/models/gru_model.py
       hash: md5
-      md5: a9a45eabf51ce38223360ff9f7a5932b
-      size: 6803
+      md5: 112b0de236a174bfab4ae0fb246e624e
+      size: 8003
+    - path: src/models/lstm_model.py
+      hash: md5
+      md5: 109ee8df6c8e07b8807c89ca0277b588
+      size: 7631
     - path: src/models/mlp_model.py
       hash: md5
-      md5: 17f92a27f7e547feeb3f5066895be3ef
-      size: 4774
+      md5: 57c155cfa78d703c6a62af759cbf3162
+      size: 6434
     - path: src/models/res_cnn_gru_model.py
       hash: md5
-      md5: c37b6e8a9d656fd6097a8c730aa0d742
-      size: 8480
+      md5: a6eaf12111491dd60133c808f6b3bfa8
+      size: 9900
+    - path: src/models/ridge_model.py
+      hash: md5
+      md5: 8da096272d17cd59963c7f4f87a50acf
+      size: 2056
+    - path: src/models/sarima_model.py
+      hash: md5
+      md5: 5758c86bb9be3fec8095d93f83365d36
+      size: 2642
+    - path: src/models/sarimax_model.py
+      hash: md5
+      md5: 25102c8aa514591666ae78ba97c2923d
+      size: 2950
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
@@ -870,52 +1046,84 @@ stages:
             objective: reg:squarederror
           mlp:
             hidden_layers:
-            - 128
             - 64
-            dropout: 0.3
-            epochs: 200
-            learning_rate: 0.001
-            batch_size: 16
+            - 32
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
           gru:
-            hidden_size: 128
-            num_layers: 2
-            sequence_length: 16
-            dropout: 0.3
-            epochs: 200
-            learning_rate: 0.001
-            batch_size: 16
+            hidden_size: 64
+            num_layers: 1
+            sequence_length: 8
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
           cnn_gru:
-            sequence_length: 16
-            gru_hidden_size: 128
-            gru_num_layers: 2
-            conv_channels:
-            - 64
-            - 128
-            - 256
-            fc_layers:
-            - 128
-            - 64
-            dropout: 0.3
-            epochs: 200
-            learning_rate: 0.001
-            batch_size: 16
-          res_cnn_gru:
-            sequence_length: 16
-            gru_hidden_size: 256
-            gru_num_layers: 3
+            sequence_length: 8
+            gru_hidden_size: 64
+            gru_num_layers: 1
             conv_channels:
             - 32
             - 64
-            - 128
-            - 256
-            - 256
             fc_layers:
-            - 256
-            - 128
-            dropout: 0.3
-            epochs: 200
-            learning_rate: 0.001
-            batch_size: 16
+            - 64
+            - 32
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
+          res_cnn_gru:
+            sequence_length: 8
+            gru_hidden_size: 64
+            gru_num_layers: 1
+            conv_channels:
+            - 16
+            - 32
+            - 64
+            fc_layers:
+            - 64
+            - 32
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
+          sarima:
+            order:
+            - 1
+            - 1
+            - 1
+            seasonal_order:
+            - 1
+            - 1
+            - 1
+            - 4
+          sarimax:
+            order:
+            - 1
+            - 1
+            - 1
+            seasonal_order:
+            - 1
+            - 1
+            - 1
+            - 4
+          ridge:
+            alpha: 1.0
+          lstm:
+            hidden_size: 64
+            num_layers: 1
+            sequence_length: 8
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
         train:
           test_size: 0.2
           random_state: 42
@@ -923,8 +1131,8 @@ stages:
     outs:
     - path: models/model_ivf_total_nacional.json
       hash: md5
-      md5: 3dd30aed66820203b1173eb079d6080d
-      size: 12732361
+      md5: 97a0c6483acbccf7ed8f0a97a971a04b
+      size: 413045
     - path: models/split_ivf_total_nacional.json
       hash: md5
       md5: d3855ab258b3df90a8b3f228b8c124f2
@@ -938,28 +1146,44 @@ stages:
       size: 68926
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/models/__init__.py
       hash: md5
-      md5: bf8a3bbce1d205bd30ea4dd52566aa48
-      size: 1118
+      md5: 67bc2c19ac77d47a2534d68c773aa9e9
+      size: 1447
     - path: src/models/cnn_gru_model.py
       hash: md5
-      md5: 244b9cfcd4c67731a7e0958e9465d5ce
-      size: 7684
+      md5: 6ededf9c1a59214a1555fe01d16f7286
+      size: 9346
     - path: src/models/gru_model.py
       hash: md5
-      md5: a9a45eabf51ce38223360ff9f7a5932b
-      size: 6803
+      md5: 112b0de236a174bfab4ae0fb246e624e
+      size: 8003
+    - path: src/models/lstm_model.py
+      hash: md5
+      md5: 109ee8df6c8e07b8807c89ca0277b588
+      size: 7631
     - path: src/models/mlp_model.py
       hash: md5
-      md5: 17f92a27f7e547feeb3f5066895be3ef
-      size: 4774
+      md5: 57c155cfa78d703c6a62af759cbf3162
+      size: 6434
     - path: src/models/res_cnn_gru_model.py
       hash: md5
-      md5: c37b6e8a9d656fd6097a8c730aa0d742
-      size: 8480
+      md5: a6eaf12111491dd60133c808f6b3bfa8
+      size: 9900
+    - path: src/models/ridge_model.py
+      hash: md5
+      md5: 8da096272d17cd59963c7f4f87a50acf
+      size: 2056
+    - path: src/models/sarima_model.py
+      hash: md5
+      md5: 5758c86bb9be3fec8095d93f83365d36
+      size: 2642
+    - path: src/models/sarimax_model.py
+      hash: md5
+      md5: 25102c8aa514591666ae78ba97c2923d
+      size: 2950
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
@@ -983,52 +1207,84 @@ stages:
             objective: reg:squarederror
           mlp:
             hidden_layers:
-            - 128
             - 64
-            dropout: 0.3
-            epochs: 200
-            learning_rate: 0.001
-            batch_size: 16
+            - 32
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
           gru:
-            hidden_size: 128
-            num_layers: 2
-            sequence_length: 16
-            dropout: 0.3
-            epochs: 200
-            learning_rate: 0.001
-            batch_size: 16
+            hidden_size: 64
+            num_layers: 1
+            sequence_length: 8
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
           cnn_gru:
-            sequence_length: 16
-            gru_hidden_size: 128
-            gru_num_layers: 2
-            conv_channels:
-            - 64
-            - 128
-            - 256
-            fc_layers:
-            - 128
-            - 64
-            dropout: 0.3
-            epochs: 200
-            learning_rate: 0.001
-            batch_size: 16
-          res_cnn_gru:
-            sequence_length: 16
-            gru_hidden_size: 256
-            gru_num_layers: 3
+            sequence_length: 8
+            gru_hidden_size: 64
+            gru_num_layers: 1
             conv_channels:
             - 32
             - 64
-            - 128
-            - 256
-            - 256
             fc_layers:
-            - 256
-            - 128
-            dropout: 0.3
-            epochs: 200
-            learning_rate: 0.001
-            batch_size: 16
+            - 64
+            - 32
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
+          res_cnn_gru:
+            sequence_length: 8
+            gru_hidden_size: 64
+            gru_num_layers: 1
+            conv_channels:
+            - 16
+            - 32
+            - 64
+            fc_layers:
+            - 64
+            - 32
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
+          sarima:
+            order:
+            - 1
+            - 1
+            - 1
+            seasonal_order:
+            - 1
+            - 1
+            - 1
+            - 4
+          sarimax:
+            order:
+            - 1
+            - 1
+            - 1
+            seasonal_order:
+            - 1
+            - 1
+            - 1
+            - 4
+          ridge:
+            alpha: 1.0
+          lstm:
+            hidden_size: 64
+            num_layers: 1
+            sequence_length: 8
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
         train:
           test_size: 0.2
           random_state: 42
@@ -1036,8 +1292,8 @@ stages:
     outs:
     - path: models/model_ivf_turistico_total.json
       hash: md5
-      md5: 9ed6157fddb07b8b901b8cd4c1ca0173
-      size: 12732463
+      md5: a727c6af2a8e716eb03b602d9fc0e5d6
+      size: 414133
     - path: models/split_ivf_turistico_total.json
       hash: md5
       md5: a87c1f1a41ba90e3eb17f886f5a90920
@@ -1051,28 +1307,44 @@ stages:
       size: 69638
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/models/__init__.py
       hash: md5
-      md5: bf8a3bbce1d205bd30ea4dd52566aa48
-      size: 1118
+      md5: 67bc2c19ac77d47a2534d68c773aa9e9
+      size: 1447
     - path: src/models/cnn_gru_model.py
       hash: md5
-      md5: 244b9cfcd4c67731a7e0958e9465d5ce
-      size: 7684
+      md5: 6ededf9c1a59214a1555fe01d16f7286
+      size: 9346
     - path: src/models/gru_model.py
       hash: md5
-      md5: a9a45eabf51ce38223360ff9f7a5932b
-      size: 6803
+      md5: 112b0de236a174bfab4ae0fb246e624e
+      size: 8003
+    - path: src/models/lstm_model.py
+      hash: md5
+      md5: 109ee8df6c8e07b8807c89ca0277b588
+      size: 7631
     - path: src/models/mlp_model.py
       hash: md5
-      md5: 17f92a27f7e547feeb3f5066895be3ef
-      size: 4774
+      md5: 57c155cfa78d703c6a62af759cbf3162
+      size: 6434
     - path: src/models/res_cnn_gru_model.py
       hash: md5
-      md5: c37b6e8a9d656fd6097a8c730aa0d742
-      size: 8480
+      md5: a6eaf12111491dd60133c808f6b3bfa8
+      size: 9900
+    - path: src/models/ridge_model.py
+      hash: md5
+      md5: 8da096272d17cd59963c7f4f87a50acf
+      size: 2056
+    - path: src/models/sarima_model.py
+      hash: md5
+      md5: 5758c86bb9be3fec8095d93f83365d36
+      size: 2642
+    - path: src/models/sarimax_model.py
+      hash: md5
+      md5: 25102c8aa514591666ae78ba97c2923d
+      size: 2950
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
@@ -1096,52 +1368,84 @@ stages:
             objective: reg:squarederror
           mlp:
             hidden_layers:
-            - 128
             - 64
-            dropout: 0.3
-            epochs: 200
-            learning_rate: 0.001
-            batch_size: 16
+            - 32
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
           gru:
-            hidden_size: 128
-            num_layers: 2
-            sequence_length: 16
-            dropout: 0.3
-            epochs: 200
-            learning_rate: 0.001
-            batch_size: 16
+            hidden_size: 64
+            num_layers: 1
+            sequence_length: 8
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
           cnn_gru:
-            sequence_length: 16
-            gru_hidden_size: 128
-            gru_num_layers: 2
-            conv_channels:
-            - 64
-            - 128
-            - 256
-            fc_layers:
-            - 128
-            - 64
-            dropout: 0.3
-            epochs: 200
-            learning_rate: 0.001
-            batch_size: 16
-          res_cnn_gru:
-            sequence_length: 16
-            gru_hidden_size: 256
-            gru_num_layers: 3
+            sequence_length: 8
+            gru_hidden_size: 64
+            gru_num_layers: 1
             conv_channels:
             - 32
             - 64
-            - 128
-            - 256
-            - 256
             fc_layers:
-            - 256
-            - 128
-            dropout: 0.3
-            epochs: 200
-            learning_rate: 0.001
-            batch_size: 16
+            - 64
+            - 32
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
+          res_cnn_gru:
+            sequence_length: 8
+            gru_hidden_size: 64
+            gru_num_layers: 1
+            conv_channels:
+            - 16
+            - 32
+            - 64
+            fc_layers:
+            - 64
+            - 32
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
+          sarima:
+            order:
+            - 1
+            - 1
+            - 1
+            seasonal_order:
+            - 1
+            - 1
+            - 1
+            - 4
+          sarimax:
+            order:
+            - 1
+            - 1
+            - 1
+            seasonal_order:
+            - 1
+            - 1
+            - 1
+            - 4
+          ridge:
+            alpha: 1.0
+          lstm:
+            hidden_size: 64
+            num_layers: 1
+            sequence_length: 8
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
         train:
           test_size: 0.2
           random_state: 42
@@ -1149,8 +1453,8 @@ stages:
     outs:
     - path: models/model_ivf_turistico_bienes.json
       hash: md5
-      md5: 9e0b0465f0020c1322d88d94eab8fcef
-      size: 12732565
+      md5: 7ad72265f1aa2522b96b0beec36a7e97
+      size: 410101
     - path: models/split_ivf_turistico_bienes.json
       hash: md5
       md5: 7a20c470c73861b2143429540214a597
@@ -1164,28 +1468,44 @@ stages:
       size: 68828
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/models/__init__.py
       hash: md5
-      md5: bf8a3bbce1d205bd30ea4dd52566aa48
-      size: 1118
+      md5: 67bc2c19ac77d47a2534d68c773aa9e9
+      size: 1447
     - path: src/models/cnn_gru_model.py
       hash: md5
-      md5: 244b9cfcd4c67731a7e0958e9465d5ce
-      size: 7684
+      md5: 6ededf9c1a59214a1555fe01d16f7286
+      size: 9346
     - path: src/models/gru_model.py
       hash: md5
-      md5: a9a45eabf51ce38223360ff9f7a5932b
-      size: 6803
+      md5: 112b0de236a174bfab4ae0fb246e624e
+      size: 8003
+    - path: src/models/lstm_model.py
+      hash: md5
+      md5: 109ee8df6c8e07b8807c89ca0277b588
+      size: 7631
     - path: src/models/mlp_model.py
       hash: md5
-      md5: 17f92a27f7e547feeb3f5066895be3ef
-      size: 4774
+      md5: 57c155cfa78d703c6a62af759cbf3162
+      size: 6434
     - path: src/models/res_cnn_gru_model.py
       hash: md5
-      md5: c37b6e8a9d656fd6097a8c730aa0d742
-      size: 8480
+      md5: a6eaf12111491dd60133c808f6b3bfa8
+      size: 9900
+    - path: src/models/ridge_model.py
+      hash: md5
+      md5: 8da096272d17cd59963c7f4f87a50acf
+      size: 2056
+    - path: src/models/sarima_model.py
+      hash: md5
+      md5: 5758c86bb9be3fec8095d93f83365d36
+      size: 2642
+    - path: src/models/sarimax_model.py
+      hash: md5
+      md5: 25102c8aa514591666ae78ba97c2923d
+      size: 2950
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
@@ -1209,52 +1529,84 @@ stages:
             objective: reg:squarederror
           mlp:
             hidden_layers:
-            - 128
             - 64
-            dropout: 0.3
-            epochs: 200
-            learning_rate: 0.001
-            batch_size: 16
+            - 32
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
           gru:
-            hidden_size: 128
-            num_layers: 2
-            sequence_length: 16
-            dropout: 0.3
-            epochs: 200
-            learning_rate: 0.001
-            batch_size: 16
+            hidden_size: 64
+            num_layers: 1
+            sequence_length: 8
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
           cnn_gru:
-            sequence_length: 16
-            gru_hidden_size: 128
-            gru_num_layers: 2
-            conv_channels:
-            - 64
-            - 128
-            - 256
-            fc_layers:
-            - 128
-            - 64
-            dropout: 0.3
-            epochs: 200
-            learning_rate: 0.001
-            batch_size: 16
-          res_cnn_gru:
-            sequence_length: 16
-            gru_hidden_size: 256
-            gru_num_layers: 3
+            sequence_length: 8
+            gru_hidden_size: 64
+            gru_num_layers: 1
             conv_channels:
             - 32
             - 64
-            - 128
-            - 256
-            - 256
             fc_layers:
-            - 256
-            - 128
-            dropout: 0.3
-            epochs: 200
-            learning_rate: 0.001
-            batch_size: 16
+            - 64
+            - 32
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
+          res_cnn_gru:
+            sequence_length: 8
+            gru_hidden_size: 64
+            gru_num_layers: 1
+            conv_channels:
+            - 16
+            - 32
+            - 64
+            fc_layers:
+            - 64
+            - 32
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
+          sarima:
+            order:
+            - 1
+            - 1
+            - 1
+            seasonal_order:
+            - 1
+            - 1
+            - 1
+            - 4
+          sarimax:
+            order:
+            - 1
+            - 1
+            - 1
+            seasonal_order:
+            - 1
+            - 1
+            - 1
+            - 4
+          ridge:
+            alpha: 1.0
+          lstm:
+            hidden_size: 64
+            num_layers: 1
+            sequence_length: 8
+            dropout: 0.2
+            epochs: 500
+            learning_rate: 0.0005
+            batch_size: 8
+            early_stopping_patience: 30
         train:
           test_size: 0.2
           random_state: 42
@@ -1262,8 +1614,8 @@ stages:
     outs:
     - path: models/model_ivf_turistico_servicios.json
       hash: md5
-      md5: 0eb10ab8a9e4644c30fc8e74442e56fc
-      size: 12732871
+      md5: f674f7a43f0710c73e7bf146a31ebc49
+      size: 413621
     - path: models/split_ivf_turistico_servicios.json
       hash: md5
       md5: 9b979bc9db62addc88c9b6635b8446dc
@@ -1277,40 +1629,56 @@ stages:
       size: 69313
     - path: models/model_ivf_total_nacional.json
       hash: md5
-      md5: 3dd30aed66820203b1173eb079d6080d
-      size: 12732361
+      md5: 97a0c6483acbccf7ed8f0a97a971a04b
+      size: 413045
     - path: models/split_ivf_total_nacional.json
       hash: md5
       md5: d3855ab258b3df90a8b3f228b8c124f2
       size: 181
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/evaluate.py
       hash: md5
-      md5: ce4d96ccf57976068c6d8137eef54ec0
-      size: 3972
+      md5: 076b3537c500bc559752ff19117b4c1d
+      size: 4344
     - path: src/models/__init__.py
       hash: md5
-      md5: bf8a3bbce1d205bd30ea4dd52566aa48
-      size: 1118
+      md5: 67bc2c19ac77d47a2534d68c773aa9e9
+      size: 1447
     - path: src/models/cnn_gru_model.py
       hash: md5
-      md5: 244b9cfcd4c67731a7e0958e9465d5ce
-      size: 7684
+      md5: 6ededf9c1a59214a1555fe01d16f7286
+      size: 9346
     - path: src/models/gru_model.py
       hash: md5
-      md5: a9a45eabf51ce38223360ff9f7a5932b
-      size: 6803
+      md5: 112b0de236a174bfab4ae0fb246e624e
+      size: 8003
+    - path: src/models/lstm_model.py
+      hash: md5
+      md5: 109ee8df6c8e07b8807c89ca0277b588
+      size: 7631
     - path: src/models/mlp_model.py
       hash: md5
-      md5: 17f92a27f7e547feeb3f5066895be3ef
-      size: 4774
+      md5: 57c155cfa78d703c6a62af759cbf3162
+      size: 6434
     - path: src/models/res_cnn_gru_model.py
       hash: md5
-      md5: c37b6e8a9d656fd6097a8c730aa0d742
-      size: 8480
+      md5: a6eaf12111491dd60133c808f6b3bfa8
+      size: 9900
+    - path: src/models/ridge_model.py
+      hash: md5
+      md5: 8da096272d17cd59963c7f4f87a50acf
+      size: 2056
+    - path: src/models/sarima_model.py
+      hash: md5
+      md5: 5758c86bb9be3fec8095d93f83365d36
+      size: 2642
+    - path: src/models/sarimax_model.py
+      hash: md5
+      md5: 25102c8aa514591666ae78ba97c2923d
+      size: 2950
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
@@ -1325,12 +1693,12 @@ stages:
     outs:
     - path: metrics/metrics_ivf_total_nacional.json
       hash: md5
-      md5: f6556359b3341ee34e4f864b25aebf86
+      md5: d0b342a5933b4755cc7dc924b68dd4e9
       size: 97
     - path: plots/forecast_ivf_total_nacional.png
       hash: md5
-      md5: 22fc75c6bbfb2ce121207e875bf995f1
-      size: 54661
+      md5: 56f1c8af021bc8406af970f355e06c1b
+      size: 55799
   evaluate_ivf_multi@ivf_turistico_total:
     cmd: python src/evaluate.py --dataset ivf_turistico_total
     deps:
@@ -1340,40 +1708,56 @@ stages:
       size: 68926
     - path: models/model_ivf_turistico_total.json
       hash: md5
-      md5: 9ed6157fddb07b8b901b8cd4c1ca0173
-      size: 12732463
+      md5: a727c6af2a8e716eb03b602d9fc0e5d6
+      size: 414133
     - path: models/split_ivf_turistico_total.json
       hash: md5
       md5: a87c1f1a41ba90e3eb17f886f5a90920
       size: 182
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/evaluate.py
       hash: md5
-      md5: ce4d96ccf57976068c6d8137eef54ec0
-      size: 3972
+      md5: 076b3537c500bc559752ff19117b4c1d
+      size: 4344
     - path: src/models/__init__.py
       hash: md5
-      md5: bf8a3bbce1d205bd30ea4dd52566aa48
-      size: 1118
+      md5: 67bc2c19ac77d47a2534d68c773aa9e9
+      size: 1447
     - path: src/models/cnn_gru_model.py
       hash: md5
-      md5: 244b9cfcd4c67731a7e0958e9465d5ce
-      size: 7684
+      md5: 6ededf9c1a59214a1555fe01d16f7286
+      size: 9346
     - path: src/models/gru_model.py
       hash: md5
-      md5: a9a45eabf51ce38223360ff9f7a5932b
-      size: 6803
+      md5: 112b0de236a174bfab4ae0fb246e624e
+      size: 8003
+    - path: src/models/lstm_model.py
+      hash: md5
+      md5: 109ee8df6c8e07b8807c89ca0277b588
+      size: 7631
     - path: src/models/mlp_model.py
       hash: md5
-      md5: 17f92a27f7e547feeb3f5066895be3ef
-      size: 4774
+      md5: 57c155cfa78d703c6a62af759cbf3162
+      size: 6434
     - path: src/models/res_cnn_gru_model.py
       hash: md5
-      md5: c37b6e8a9d656fd6097a8c730aa0d742
-      size: 8480
+      md5: a6eaf12111491dd60133c808f6b3bfa8
+      size: 9900
+    - path: src/models/ridge_model.py
+      hash: md5
+      md5: 8da096272d17cd59963c7f4f87a50acf
+      size: 2056
+    - path: src/models/sarima_model.py
+      hash: md5
+      md5: 5758c86bb9be3fec8095d93f83365d36
+      size: 2642
+    - path: src/models/sarimax_model.py
+      hash: md5
+      md5: 25102c8aa514591666ae78ba97c2923d
+      size: 2950
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
@@ -1388,12 +1772,12 @@ stages:
     outs:
     - path: metrics/metrics_ivf_turistico_total.json
       hash: md5
-      md5: ba60fb9ecd2b71f5d85de01b791a5093
-      size: 97
+      md5: b4ef7465fa6296626a11c37e07deee16
+      size: 96
     - path: plots/forecast_ivf_turistico_total.png
       hash: md5
-      md5: 9ecf06e0967bf5a869ec14bd2d609e20
-      size: 57124
+      md5: 60f9e3b4b62cf2ab18bae8bc37ab5824
+      size: 59850
   evaluate_ivf_multi@ivf_turistico_bienes:
     cmd: python src/evaluate.py --dataset ivf_turistico_bienes
     deps:
@@ -1403,40 +1787,56 @@ stages:
       size: 69638
     - path: models/model_ivf_turistico_bienes.json
       hash: md5
-      md5: 9e0b0465f0020c1322d88d94eab8fcef
-      size: 12732565
+      md5: 7ad72265f1aa2522b96b0beec36a7e97
+      size: 410101
     - path: models/split_ivf_turistico_bienes.json
       hash: md5
       md5: 7a20c470c73861b2143429540214a597
       size: 183
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/evaluate.py
       hash: md5
-      md5: ce4d96ccf57976068c6d8137eef54ec0
-      size: 3972
+      md5: 076b3537c500bc559752ff19117b4c1d
+      size: 4344
     - path: src/models/__init__.py
       hash: md5
-      md5: bf8a3bbce1d205bd30ea4dd52566aa48
-      size: 1118
+      md5: 67bc2c19ac77d47a2534d68c773aa9e9
+      size: 1447
     - path: src/models/cnn_gru_model.py
       hash: md5
-      md5: 244b9cfcd4c67731a7e0958e9465d5ce
-      size: 7684
+      md5: 6ededf9c1a59214a1555fe01d16f7286
+      size: 9346
     - path: src/models/gru_model.py
       hash: md5
-      md5: a9a45eabf51ce38223360ff9f7a5932b
-      size: 6803
+      md5: 112b0de236a174bfab4ae0fb246e624e
+      size: 8003
+    - path: src/models/lstm_model.py
+      hash: md5
+      md5: 109ee8df6c8e07b8807c89ca0277b588
+      size: 7631
     - path: src/models/mlp_model.py
       hash: md5
-      md5: 17f92a27f7e547feeb3f5066895be3ef
-      size: 4774
+      md5: 57c155cfa78d703c6a62af759cbf3162
+      size: 6434
     - path: src/models/res_cnn_gru_model.py
       hash: md5
-      md5: c37b6e8a9d656fd6097a8c730aa0d742
-      size: 8480
+      md5: a6eaf12111491dd60133c808f6b3bfa8
+      size: 9900
+    - path: src/models/ridge_model.py
+      hash: md5
+      md5: 8da096272d17cd59963c7f4f87a50acf
+      size: 2056
+    - path: src/models/sarima_model.py
+      hash: md5
+      md5: 5758c86bb9be3fec8095d93f83365d36
+      size: 2642
+    - path: src/models/sarimax_model.py
+      hash: md5
+      md5: 25102c8aa514591666ae78ba97c2923d
+      size: 2950
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
@@ -1451,12 +1851,12 @@ stages:
     outs:
     - path: metrics/metrics_ivf_turistico_bienes.json
       hash: md5
-      md5: c0af04d935a30b3b7712f756fb67398f
-      size: 98
+      md5: fe246a24a64d1e6e81bd4d6a80c487fc
+      size: 97
     - path: plots/forecast_ivf_turistico_bienes.png
       hash: md5
-      md5: 91128ae673ac44ffb798a8f39cf14731
-      size: 63325
+      md5: f8df338acd99c0dd1bb836ab3db7ecfd
+      size: 61880
   evaluate_ivf_multi@ivf_turistico_servicios:
     cmd: python src/evaluate.py --dataset ivf_turistico_servicios
     deps:
@@ -1466,40 +1866,56 @@ stages:
       size: 68828
     - path: models/model_ivf_turistico_servicios.json
       hash: md5
-      md5: 0eb10ab8a9e4644c30fc8e74442e56fc
-      size: 12732871
+      md5: f674f7a43f0710c73e7bf146a31ebc49
+      size: 413621
     - path: models/split_ivf_turistico_servicios.json
       hash: md5
       md5: 9b979bc9db62addc88c9b6635b8446dc
       size: 186
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/evaluate.py
       hash: md5
-      md5: ce4d96ccf57976068c6d8137eef54ec0
-      size: 3972
+      md5: 076b3537c500bc559752ff19117b4c1d
+      size: 4344
     - path: src/models/__init__.py
       hash: md5
-      md5: bf8a3bbce1d205bd30ea4dd52566aa48
-      size: 1118
+      md5: 67bc2c19ac77d47a2534d68c773aa9e9
+      size: 1447
     - path: src/models/cnn_gru_model.py
       hash: md5
-      md5: 244b9cfcd4c67731a7e0958e9465d5ce
-      size: 7684
+      md5: 6ededf9c1a59214a1555fe01d16f7286
+      size: 9346
     - path: src/models/gru_model.py
       hash: md5
-      md5: a9a45eabf51ce38223360ff9f7a5932b
-      size: 6803
+      md5: 112b0de236a174bfab4ae0fb246e624e
+      size: 8003
+    - path: src/models/lstm_model.py
+      hash: md5
+      md5: 109ee8df6c8e07b8807c89ca0277b588
+      size: 7631
     - path: src/models/mlp_model.py
       hash: md5
-      md5: 17f92a27f7e547feeb3f5066895be3ef
-      size: 4774
+      md5: 57c155cfa78d703c6a62af759cbf3162
+      size: 6434
     - path: src/models/res_cnn_gru_model.py
       hash: md5
-      md5: c37b6e8a9d656fd6097a8c730aa0d742
-      size: 8480
+      md5: a6eaf12111491dd60133c808f6b3bfa8
+      size: 9900
+    - path: src/models/ridge_model.py
+      hash: md5
+      md5: 8da096272d17cd59963c7f4f87a50acf
+      size: 2056
+    - path: src/models/sarima_model.py
+      hash: md5
+      md5: 5758c86bb9be3fec8095d93f83365d36
+      size: 2642
+    - path: src/models/sarimax_model.py
+      hash: md5
+      md5: 25102c8aa514591666ae78ba97c2923d
+      size: 2950
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
@@ -1514,12 +1930,12 @@ stages:
     outs:
     - path: metrics/metrics_ivf_turistico_servicios.json
       hash: md5
-      md5: f82da7b24f2fb36bc4356de611fd91c8
+      md5: c070259f1b404e6f509088d130b0fbb6
       size: 97
     - path: plots/forecast_ivf_turistico_servicios.png
       hash: md5
-      md5: ab5181a5bfc859d9cddf18d9a1879122
-      size: 57237
+      md5: b342e1e0ab843e0ec7a31986d040e316
+      size: 59263
   interpret_ivf_multi@ivf_total_nacional:
     cmd: python src/interpret.py --dataset ivf_total_nacional
     deps:
@@ -1533,40 +1949,56 @@ stages:
       size: 5524
     - path: models/model_ivf_total_nacional.json
       hash: md5
-      md5: 3dd30aed66820203b1173eb079d6080d
-      size: 12732361
+      md5: 97a0c6483acbccf7ed8f0a97a971a04b
+      size: 413045
     - path: models/split_ivf_total_nacional.json
       hash: md5
       md5: d3855ab258b3df90a8b3f228b8c124f2
       size: 181
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/interpret.py
       hash: md5
-      md5: 7b19928cd30c1271440d6118d17a66ff
-      size: 4858
+      md5: 99008fca6bd3987abbbc0c115fe5a20b
+      size: 5864
     - path: src/models/__init__.py
       hash: md5
-      md5: bf8a3bbce1d205bd30ea4dd52566aa48
-      size: 1118
+      md5: 67bc2c19ac77d47a2534d68c773aa9e9
+      size: 1447
     - path: src/models/cnn_gru_model.py
       hash: md5
-      md5: 244b9cfcd4c67731a7e0958e9465d5ce
-      size: 7684
+      md5: 6ededf9c1a59214a1555fe01d16f7286
+      size: 9346
     - path: src/models/gru_model.py
       hash: md5
-      md5: a9a45eabf51ce38223360ff9f7a5932b
-      size: 6803
+      md5: 112b0de236a174bfab4ae0fb246e624e
+      size: 8003
+    - path: src/models/lstm_model.py
+      hash: md5
+      md5: 109ee8df6c8e07b8807c89ca0277b588
+      size: 7631
     - path: src/models/mlp_model.py
       hash: md5
-      md5: 17f92a27f7e547feeb3f5066895be3ef
-      size: 4774
+      md5: 57c155cfa78d703c6a62af759cbf3162
+      size: 6434
     - path: src/models/res_cnn_gru_model.py
       hash: md5
-      md5: c37b6e8a9d656fd6097a8c730aa0d742
-      size: 8480
+      md5: a6eaf12111491dd60133c808f6b3bfa8
+      size: 9900
+    - path: src/models/ridge_model.py
+      hash: md5
+      md5: 8da096272d17cd59963c7f4f87a50acf
+      size: 2056
+    - path: src/models/sarima_model.py
+      hash: md5
+      md5: 5758c86bb9be3fec8095d93f83365d36
+      size: 2642
+    - path: src/models/sarimax_model.py
+      hash: md5
+      md5: 25102c8aa514591666ae78ba97c2923d
+      size: 2950
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
@@ -1587,12 +2019,12 @@ stages:
       size: 2352
     - path: data/shap/shap_values_ivf_total_nacional.npz
       hash: md5
-      md5: c107c2d0be7623a07761aa9112327969
+      md5: 7371e171077d35a641cffcc19cdccc08
       size: 42388
     - path: plots/shap_ivf_total_nacional.png
       hash: md5
-      md5: 6862efbc3b20efffdfe4f747c44d9eb8
-      size: 72394
+      md5: de3c1cb35221c578293cf7ef796ad79b
+      size: 5121
     - path: plots/stl_ivf_total_nacional.png
       hash: md5
       md5: 7fd3567cd12e5296bb7d2a8bfb9f6a03
@@ -1610,40 +2042,56 @@ stages:
       size: 5524
     - path: models/model_ivf_turistico_total.json
       hash: md5
-      md5: 9ed6157fddb07b8b901b8cd4c1ca0173
-      size: 12732463
+      md5: a727c6af2a8e716eb03b602d9fc0e5d6
+      size: 414133
     - path: models/split_ivf_turistico_total.json
       hash: md5
       md5: a87c1f1a41ba90e3eb17f886f5a90920
       size: 182
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/interpret.py
       hash: md5
-      md5: 7b19928cd30c1271440d6118d17a66ff
-      size: 4858
+      md5: 99008fca6bd3987abbbc0c115fe5a20b
+      size: 5864
     - path: src/models/__init__.py
       hash: md5
-      md5: bf8a3bbce1d205bd30ea4dd52566aa48
-      size: 1118
+      md5: 67bc2c19ac77d47a2534d68c773aa9e9
+      size: 1447
     - path: src/models/cnn_gru_model.py
       hash: md5
-      md5: 244b9cfcd4c67731a7e0958e9465d5ce
-      size: 7684
+      md5: 6ededf9c1a59214a1555fe01d16f7286
+      size: 9346
     - path: src/models/gru_model.py
       hash: md5
-      md5: a9a45eabf51ce38223360ff9f7a5932b
-      size: 6803
+      md5: 112b0de236a174bfab4ae0fb246e624e
+      size: 8003
+    - path: src/models/lstm_model.py
+      hash: md5
+      md5: 109ee8df6c8e07b8807c89ca0277b588
+      size: 7631
     - path: src/models/mlp_model.py
       hash: md5
-      md5: 17f92a27f7e547feeb3f5066895be3ef
-      size: 4774
+      md5: 57c155cfa78d703c6a62af759cbf3162
+      size: 6434
     - path: src/models/res_cnn_gru_model.py
       hash: md5
-      md5: c37b6e8a9d656fd6097a8c730aa0d742
-      size: 8480
+      md5: a6eaf12111491dd60133c808f6b3bfa8
+      size: 9900
+    - path: src/models/ridge_model.py
+      hash: md5
+      md5: 8da096272d17cd59963c7f4f87a50acf
+      size: 2056
+    - path: src/models/sarima_model.py
+      hash: md5
+      md5: 5758c86bb9be3fec8095d93f83365d36
+      size: 2642
+    - path: src/models/sarimax_model.py
+      hash: md5
+      md5: 25102c8aa514591666ae78ba97c2923d
+      size: 2950
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
@@ -1664,12 +2112,12 @@ stages:
       size: 2352
     - path: data/shap/shap_values_ivf_turistico_total.npz
       hash: md5
-      md5: 78e13d5e4bdbb13f5a1cd27433b3462f
+      md5: 60f46745a02745372f432313766adca3
       size: 42388
     - path: plots/shap_ivf_turistico_total.png
       hash: md5
-      md5: 48906b5502c953ef05b91e6315cd34b6
-      size: 74021
+      md5: 0f38cef56f9e2193b29321255f4933e8
+      size: 73747
     - path: plots/stl_ivf_turistico_total.png
       hash: md5
       md5: 3bb1b67c0c0481d4d7ba5ba3bc3be3d9
@@ -1687,40 +2135,56 @@ stages:
       size: 5524
     - path: models/model_ivf_turistico_bienes.json
       hash: md5
-      md5: 9e0b0465f0020c1322d88d94eab8fcef
-      size: 12732565
+      md5: 7ad72265f1aa2522b96b0beec36a7e97
+      size: 410101
     - path: models/split_ivf_turistico_bienes.json
       hash: md5
       md5: 7a20c470c73861b2143429540214a597
       size: 183
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/interpret.py
       hash: md5
-      md5: 7b19928cd30c1271440d6118d17a66ff
-      size: 4858
+      md5: 99008fca6bd3987abbbc0c115fe5a20b
+      size: 5864
     - path: src/models/__init__.py
       hash: md5
-      md5: bf8a3bbce1d205bd30ea4dd52566aa48
-      size: 1118
+      md5: 67bc2c19ac77d47a2534d68c773aa9e9
+      size: 1447
     - path: src/models/cnn_gru_model.py
       hash: md5
-      md5: 244b9cfcd4c67731a7e0958e9465d5ce
-      size: 7684
+      md5: 6ededf9c1a59214a1555fe01d16f7286
+      size: 9346
     - path: src/models/gru_model.py
       hash: md5
-      md5: a9a45eabf51ce38223360ff9f7a5932b
-      size: 6803
+      md5: 112b0de236a174bfab4ae0fb246e624e
+      size: 8003
+    - path: src/models/lstm_model.py
+      hash: md5
+      md5: 109ee8df6c8e07b8807c89ca0277b588
+      size: 7631
     - path: src/models/mlp_model.py
       hash: md5
-      md5: 17f92a27f7e547feeb3f5066895be3ef
-      size: 4774
+      md5: 57c155cfa78d703c6a62af759cbf3162
+      size: 6434
     - path: src/models/res_cnn_gru_model.py
       hash: md5
-      md5: c37b6e8a9d656fd6097a8c730aa0d742
-      size: 8480
+      md5: a6eaf12111491dd60133c808f6b3bfa8
+      size: 9900
+    - path: src/models/ridge_model.py
+      hash: md5
+      md5: 8da096272d17cd59963c7f4f87a50acf
+      size: 2056
+    - path: src/models/sarima_model.py
+      hash: md5
+      md5: 5758c86bb9be3fec8095d93f83365d36
+      size: 2642
+    - path: src/models/sarimax_model.py
+      hash: md5
+      md5: 25102c8aa514591666ae78ba97c2923d
+      size: 2950
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
@@ -1741,12 +2205,12 @@ stages:
       size: 2352
     - path: data/shap/shap_values_ivf_turistico_bienes.npz
       hash: md5
-      md5: 45b62c2715374498f3e1f19e6968d55c
+      md5: ceab02baef86dba2d6ec39ac1bf502d7
       size: 42388
     - path: plots/shap_ivf_turistico_bienes.png
       hash: md5
-      md5: 9305ff3a9500a6d0c76d886d16e2cfda
-      size: 74178
+      md5: cf9a2ae0e7ac3dca1b082484e5a8dc54
+      size: 73649
     - path: plots/stl_ivf_turistico_bienes.png
       hash: md5
       md5: 870339d6f5ad204d3f452bcb82001d8b
@@ -1764,40 +2228,56 @@ stages:
       size: 5524
     - path: models/model_ivf_turistico_servicios.json
       hash: md5
-      md5: 0eb10ab8a9e4644c30fc8e74442e56fc
-      size: 12732871
+      md5: f674f7a43f0710c73e7bf146a31ebc49
+      size: 413621
     - path: models/split_ivf_turistico_servicios.json
       hash: md5
       md5: 9b979bc9db62addc88c9b6635b8446dc
       size: 186
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/interpret.py
       hash: md5
-      md5: 7b19928cd30c1271440d6118d17a66ff
-      size: 4858
+      md5: 99008fca6bd3987abbbc0c115fe5a20b
+      size: 5864
     - path: src/models/__init__.py
       hash: md5
-      md5: bf8a3bbce1d205bd30ea4dd52566aa48
-      size: 1118
+      md5: 67bc2c19ac77d47a2534d68c773aa9e9
+      size: 1447
     - path: src/models/cnn_gru_model.py
       hash: md5
-      md5: 244b9cfcd4c67731a7e0958e9465d5ce
-      size: 7684
+      md5: 6ededf9c1a59214a1555fe01d16f7286
+      size: 9346
     - path: src/models/gru_model.py
       hash: md5
-      md5: a9a45eabf51ce38223360ff9f7a5932b
-      size: 6803
+      md5: 112b0de236a174bfab4ae0fb246e624e
+      size: 8003
+    - path: src/models/lstm_model.py
+      hash: md5
+      md5: 109ee8df6c8e07b8807c89ca0277b588
+      size: 7631
     - path: src/models/mlp_model.py
       hash: md5
-      md5: 17f92a27f7e547feeb3f5066895be3ef
-      size: 4774
+      md5: 57c155cfa78d703c6a62af759cbf3162
+      size: 6434
     - path: src/models/res_cnn_gru_model.py
       hash: md5
-      md5: c37b6e8a9d656fd6097a8c730aa0d742
-      size: 8480
+      md5: a6eaf12111491dd60133c808f6b3bfa8
+      size: 9900
+    - path: src/models/ridge_model.py
+      hash: md5
+      md5: 8da096272d17cd59963c7f4f87a50acf
+      size: 2056
+    - path: src/models/sarima_model.py
+      hash: md5
+      md5: 5758c86bb9be3fec8095d93f83365d36
+      size: 2642
+    - path: src/models/sarimax_model.py
+      hash: md5
+      md5: 25102c8aa514591666ae78ba97c2923d
+      size: 2950
     - path: src/models/xgboost_model.py
       hash: md5
       md5: 595832f62a712cff62e62c0c6d4cb073
@@ -1818,12 +2298,12 @@ stages:
       size: 2352
     - path: data/shap/shap_values_ivf_turistico_servicios.npz
       hash: md5
-      md5: e64367db21d024b082fe1037f6a70b62
+      md5: d475dbceb564f8c21fc9fc0bda25f71c
       size: 42388
     - path: plots/shap_ivf_turistico_servicios.png
       hash: md5
-      md5: ac237f28aac53871d10b1eb14a9caaf1
-      size: 74747
+      md5: af5d2fb82cf14a9e0113be2c1b05bb36
+      size: 74257
     - path: plots/stl_ivf_turistico_servicios.png
       hash: md5
       md5: 1a515b3f10dcc4f918aa186c189faf5d
@@ -1841,16 +2321,16 @@ stages:
       size: 64843
     - path: models/model_ivf_turistico_servicios.json
       hash: md5
-      md5: 0eb10ab8a9e4644c30fc8e74442e56fc
-      size: 12732871
+      md5: f674f7a43f0710c73e7bf146a31ebc49
+      size: 413621
     - path: models/split_ivf_turistico_servicios.json
       hash: md5
       md5: 9b979bc9db62addc88c9b6635b8446dc
       size: 186
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/forecast.py
       hash: md5
       md5: 3a0d7b7cf8f2919161c774dacaa2e1a3
@@ -1882,12 +2362,12 @@ stages:
     outs:
     - path: data/forecasts/forecast_ivf_turistico_servicios.csv
       hash: md5
-      md5: bfa9184ba4a9985674557cea3de1d0ae
-      size: 502
+      md5: 5278a95ed2199b036ac266c50fc21b89
+      size: 506
     - path: plots/forecast_future_ivf_turistico_servicios.png
       hash: md5
-      md5: fc1818cb86b38c1d160fb51b050d84c9
-      size: 104057
+      md5: b2c969c62803a1e8c03e1a4006c26d18
+      size: 106293
   forecast_ivf_multi@ivf_turistico_bienes:
     cmd: python src/forecast.py --series ivf_turistico_bienes
     deps:
@@ -1901,16 +2381,16 @@ stages:
       size: 64843
     - path: models/model_ivf_turistico_bienes.json
       hash: md5
-      md5: 9e0b0465f0020c1322d88d94eab8fcef
-      size: 12732565
+      md5: 7ad72265f1aa2522b96b0beec36a7e97
+      size: 410101
     - path: models/split_ivf_turistico_bienes.json
       hash: md5
       md5: 7a20c470c73861b2143429540214a597
       size: 183
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/forecast.py
       hash: md5
       md5: 3a0d7b7cf8f2919161c774dacaa2e1a3
@@ -1942,12 +2422,12 @@ stages:
     outs:
     - path: data/forecasts/forecast_ivf_turistico_bienes.csv
       hash: md5
-      md5: 9a718158960869cb2fd600577280dea3
-      size: 486
+      md5: 4dfea3a1735439a4fe5a310c5a5443dc
+      size: 491
     - path: plots/forecast_future_ivf_turistico_bienes.png
       hash: md5
-      md5: c92f87fc199c7ca2cdb2c45c4235a2ab
-      size: 111937
+      md5: b6eda6fe919103b9dbabf15b4228b955
+      size: 115051
   forecast_ivf_multi@ivf_turistico_total:
     cmd: python src/forecast.py --series ivf_turistico_total
     deps:
@@ -1961,16 +2441,16 @@ stages:
       size: 64843
     - path: models/model_ivf_turistico_total.json
       hash: md5
-      md5: 9ed6157fddb07b8b901b8cd4c1ca0173
-      size: 12732463
+      md5: a727c6af2a8e716eb03b602d9fc0e5d6
+      size: 414133
     - path: models/split_ivf_turistico_total.json
       hash: md5
       md5: a87c1f1a41ba90e3eb17f886f5a90920
       size: 182
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/forecast.py
       hash: md5
       md5: 3a0d7b7cf8f2919161c774dacaa2e1a3
@@ -2002,12 +2482,12 @@ stages:
     outs:
     - path: data/forecasts/forecast_ivf_turistico_total.csv
       hash: md5
-      md5: 7009f901cd8a80eef22aaf9664d1e98c
-      size: 474
+      md5: 5d0df16a3e53ff9abca9791a9d98d788
+      size: 482
     - path: plots/forecast_future_ivf_turistico_total.png
       hash: md5
-      md5: cfac7a398693298c11fa5279d7d95250
-      size: 103667
+      md5: 65bd7f3355ae8ba9da64501bbe929ba3
+      size: 107409
   forecast_ivf_multi@ivf_total_nacional:
     cmd: python src/forecast.py --series ivf_total_nacional
     deps:
@@ -2021,16 +2501,16 @@ stages:
       size: 64843
     - path: models/model_ivf_total_nacional.json
       hash: md5
-      md5: 3dd30aed66820203b1173eb079d6080d
-      size: 12732361
+      md5: 97a0c6483acbccf7ed8f0a97a971a04b
+      size: 413045
     - path: models/split_ivf_total_nacional.json
       hash: md5
       md5: d3855ab258b3df90a8b3f228b8c124f2
       size: 181
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/forecast.py
       hash: md5
       md5: 3a0d7b7cf8f2919161c774dacaa2e1a3
@@ -2062,12 +2542,12 @@ stages:
     outs:
     - path: data/forecasts/forecast_ivf_total_nacional.csv
       hash: md5
-      md5: 90f399bf8dbf0a30988f418679529de7
-      size: 477
+      md5: 691f14c66152bf16c957a274c829cc48
+      size: 472
     - path: plots/forecast_future_ivf_total_nacional.png
       hash: md5
-      md5: 5882e2edbd161cb298d5c88fd44f155b
-      size: 99766
+      md5: 3288e826def0b0e8191ad6810c90e151
+      size: 105810
   compare_shap:
     cmd: python src/compare_shap.py
     deps:
@@ -2089,24 +2569,24 @@ stages:
       size: 2352
     - path: data/shap/shap_values_ivf_total_nacional.npz
       hash: md5
-      md5: c107c2d0be7623a07761aa9112327969
+      md5: 7371e171077d35a641cffcc19cdccc08
       size: 42388
     - path: data/shap/shap_values_ivf_turistico_bienes.npz
       hash: md5
-      md5: 45b62c2715374498f3e1f19e6968d55c
+      md5: ceab02baef86dba2d6ec39ac1bf502d7
       size: 42388
     - path: data/shap/shap_values_ivf_turistico_servicios.npz
       hash: md5
-      md5: e64367db21d024b082fe1037f6a70b62
+      md5: d475dbceb564f8c21fc9fc0bda25f71c
       size: 42388
     - path: data/shap/shap_values_ivf_turistico_total.npz
       hash: md5
-      md5: 78e13d5e4bdbb13f5a1cd27433b3462f
+      md5: 60f46745a02745372f432313766adca3
       size: 42388
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/compare_shap.py
       hash: md5
       md5: 93c3d243b3e4d5b940ef240dc0a0a13f
@@ -2114,12 +2594,12 @@ stages:
     outs:
     - path: data/shap/indicator_importance_summary.csv
       hash: md5
-      md5: 6d44234c27f8e9725768c6507079a7eb
-      size: 3135
+      md5: 47402c820703a9d007523762206845ba
+      size: 2991
     - path: plots/shap_compare_indicators.png
       hash: md5
-      md5: 617feced631ba72573bf2e25ba3781f7
-      size: 555016
+      md5: ccf37d09a35fa0c5177e2e4edaf69319
+      size: 473848
   backcast_indicadores:
     cmd: python src/backcast_indicadores.py
     deps:
@@ -2133,8 +2613,8 @@ stages:
       size: 320410
     - path: params.yaml
       hash: md5
-      md5: f13d0d9ae02218b9d56a20e73be89c76
-      size: 2669
+      md5: bfc050b214aae2598224dda52f398640
+      size: 3188
     - path: src/backcast_indicadores.py
       hash: md5
       md5: 9f70526f97b24d02eaeafa150c20e073

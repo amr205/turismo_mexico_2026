@@ -3,6 +3,10 @@ from .mlp_model import MLPForecaster
 from .gru_model import GRUForecaster
 from .cnn_gru_model import CNNGRUForecaster
 from .res_cnn_gru_model import ResCNNGRUForecaster
+from .sarima_model import SARIMAForecaster
+from .sarimax_model import SARIMAXForecaster
+from .ridge_model import RidgeForecaster
+from .lstm_model import LSTMForecaster
 
 MODEL_REGISTRY = {
     "xgboost": XGBoostForecaster,
@@ -10,6 +14,10 @@ MODEL_REGISTRY = {
     "gru": GRUForecaster,
     "cnn_gru": CNNGRUForecaster,
     "res_cnn_gru": ResCNNGRUForecaster,
+    "sarima": SARIMAForecaster,
+    "sarimax": SARIMAXForecaster,
+    "ridge": RidgeForecaster,
+    "lstm": LSTMForecaster,
 }
 
 

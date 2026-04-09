@@ -2,13 +2,16 @@
 Modelo GRU para pronóstico de series de tiempo.
 
 Arquitectura:
-    GRU(n_features, hidden=128, layers=2) → último estado oculto
-    FC(128 → 64) → ReLU → Dropout
-    FC(64 → 1)
+    GRU(n_features, hidden=64, layers=1) → último estado oculto
+    FC(64 → 32) → ReLU → Dropout
+    FC(32 → 1)
 
 Usa ventanas deslizantes de seq_len pasos como entrada.
 Aísla la contribución de la recurrencia temporal frente al MLP.
+Incluye val split (20%) + early stopping con patience=30.
 """
+
+import copy
 
 import numpy as np
 import torch
@@ -46,24 +49,18 @@ class GRUForecaster(BaseForecaster):
 
     def __init__(self, params: dict):
         self.params = params
-        self.hidden_size = params.get("hidden_size", 128)
-        self.num_layers = params.get("num_layers", 2)
-        self.seq_len = params.get("sequence_length", 16)
-        self.dropout = params.get("dropout", 0.3)
-        self.epochs = params.get("epochs", 200)
-        self.lr = params.get("learning_rate", 0.001)
-        self.batch_size = params.get("batch_size", 16)
+        self.hidden_size = params.get("hidden_size", 64)
+        self.num_layers = params.get("num_layers", 1)
+        self.seq_len = params.get("sequence_length", 8)
+        self.dropout = params.get("dropout", 0.2)
+        self.epochs = params.get("epochs", 500)
+        self.lr = params.get("learning_rate", 0.0005)
+        self.batch_size = params.get("batch_size", 8)
         self.model: _GRUNet | None = None
         self.n_features: int | None = None
         self.context_X: np.ndarray | None = None   # últimas seq_len-1 filas de entrenamiento
-
-    # ------------------------------------------------------------------
-    def _make_sequences(self, X: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-        """Crea pares (ventana de seq_len pasos, índice del paso a predecir)."""
-        n = len(X)
-        xs = np.stack([X[i : i + self.seq_len] for i in range(n - self.seq_len)], axis=0)
-        # targets en posición seq_len (primer valor fuera de la ventana)
-        return xs  # shape: (n - seq_len, seq_len, n_features)
+        self.train_losses: list = []
+        self.val_losses: list = []
 
     # ------------------------------------------------------------------
     def fit(self, X_train, y_train) -> None:
@@ -81,21 +78,60 @@ class GRUForecaster(BaseForecaster):
         X_wins = np.stack([X[i : i + self.seq_len] for i in range(n - self.seq_len)], axis=0)
         y_wins = y[self.seq_len:]
 
+        # Val split cronológico (último 20%)
+        n_val = max(1, int(len(X_wins) * 0.2))
+        X_tr, X_vl = X_wins[:-n_val], X_wins[-n_val:]
+        y_tr, y_vl = y_wins[:-n_val], y_wins[-n_val:]
+
         dataset = torch.utils.data.TensorDataset(
-            torch.from_numpy(X_wins), torch.from_numpy(y_wins)
+            torch.from_numpy(X_tr), torch.from_numpy(y_tr)
         )
         loader = torch.utils.data.DataLoader(
             dataset, batch_size=self.batch_size, shuffle=True
         )
 
-        self.model.train()
+        patience = self.params.get("early_stopping_patience", 30)
+        self.train_losses, self.val_losses = [], []
+        best_val = float("inf")
+        wait = 0
+        best_state = None
+
         for epoch in range(self.epochs):
+            self.model.train()
+            epoch_loss = 0.0
+            n_batches = 0
             for xb, yb in loader:
                 optimizer.zero_grad()
-                loss_fn(self.model(xb), yb).backward()
+                loss = loss_fn(self.model(xb), yb)
+                loss.backward()
                 optimizer.step()
-            if (epoch + 1) % 50 == 0:
-                print(f"  GRU época {epoch + 1}/{self.epochs}")
+                epoch_loss += loss.item()
+                n_batches += 1
+            train_loss = epoch_loss / max(n_batches, 1)
+
+            self.model.eval()
+            with torch.no_grad():
+                val_loss = loss_fn(
+                    self.model(torch.from_numpy(X_vl)),
+                    torch.from_numpy(y_vl),
+                ).item()
+
+            self.train_losses.append(train_loss)
+            self.val_losses.append(val_loss)
+
+            if val_loss < best_val - 1e-4:
+                best_val = val_loss
+                wait = 0
+                best_state = copy.deepcopy(self.model.state_dict())
+            else:
+                wait += 1
+                if wait >= patience:
+                    print(f"  GRU early stop época {epoch + 1}")
+                    break
+
+        if best_state is not None:
+            self.model.load_state_dict(best_state)
+        self.model.eval()
 
     # ------------------------------------------------------------------
     def predict(self, X) -> np.ndarray:
@@ -118,6 +154,8 @@ class GRUForecaster(BaseForecaster):
                 "n_features": self.n_features,
                 "context_X": self.context_X,
                 "params": self.params,
+                "train_losses": self.train_losses,
+                "val_losses": self.val_losses,
             },
             path,
         )
@@ -128,6 +166,8 @@ class GRUForecaster(BaseForecaster):
         instance = cls(data["params"])
         instance.n_features = data["n_features"]
         instance.context_X = data["context_X"]
+        instance.train_losses = data.get("train_losses", [])
+        instance.val_losses = data.get("val_losses", [])
         instance.model = _GRUNet(
             instance.n_features,
             instance.hidden_size,

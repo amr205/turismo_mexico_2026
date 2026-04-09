@@ -91,6 +91,15 @@ def evaluate(dataset: str) -> None:
         json.dump(metrics, f, indent=2)
     print(f"Métricas: {metrics}")
 
+    # Guardar predicciones para análisis posterior
+    preds_path = cfg["metrics_out"].replace("metrics_", "predictions_").replace(".json", ".csv")
+    pd.DataFrame({
+        "date": y_test.index.astype(str),
+        "y_true": y_test.values,
+        "y_pred": y_pred,
+    }).to_csv(preds_path, index=False)
+    print(f"Predicciones guardadas en: {preds_path}")
+
     # Gráfica: real vs predicho
     os.makedirs("plots", exist_ok=True)
     fig, ax = plt.subplots(figsize=(12, 5))

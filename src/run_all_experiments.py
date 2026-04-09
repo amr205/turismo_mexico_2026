@@ -18,25 +18,42 @@ Uso:
 """
 
 import argparse
+import os
 import subprocess
 import sys
 
+# Forzar backend no-interactivo para evitar errores de Tkinter en modo headless
+os.environ.setdefault("MPLBACKEND", "Agg")
+
 EXPERIMENTS = [
-    {"name": "xgb_zero",              "model_type": "xgboost",     "backfill": "zero"},
-    {"name": "xgb_linear",            "model_type": "xgboost",     "backfill": "linear"},
-    {"name": "xgb_xgb_backcast",      "model_type": "xgboost",     "backfill": "xgboost_backcast"},
-    {"name": "mlp_zero",              "model_type": "mlp",         "backfill": "zero"},
-    {"name": "mlp_linear",            "model_type": "mlp",         "backfill": "linear"},
-    {"name": "mlp_xgb_backcast",      "model_type": "mlp",         "backfill": "xgboost_backcast"},
-    {"name": "gru_zero",              "model_type": "gru",         "backfill": "zero"},
-    {"name": "gru_linear",            "model_type": "gru",         "backfill": "linear"},
-    {"name": "gru_xgb_backcast",      "model_type": "gru",         "backfill": "xgboost_backcast"},
-    {"name": "cnngru_zero",           "model_type": "cnn_gru",     "backfill": "zero"},
-    {"name": "cnngru_linear",         "model_type": "cnn_gru",     "backfill": "linear"},
-    {"name": "cnngru_xgb_backcast",   "model_type": "cnn_gru",     "backfill": "xgboost_backcast"},
-    {"name": "rescnngru_zero",        "model_type": "res_cnn_gru", "backfill": "zero"},
-    {"name": "rescnngru_linear",      "model_type": "res_cnn_gru", "backfill": "linear"},
-    {"name": "rescnngru_xgb_backcast","model_type": "res_cnn_gru", "backfill": "xgboost_backcast"},
+    # Modelos clásicos y lineales
+    {"name": "xgb_zero",               "model_type": "xgboost",     "backfill": "zero"},
+    {"name": "xgb_linear",             "model_type": "xgboost",     "backfill": "linear"},
+    {"name": "xgb_xgb_backcast",       "model_type": "xgboost",     "backfill": "xgboost_backcast"},
+    {"name": "ridge_zero",             "model_type": "ridge",       "backfill": "zero"},
+    {"name": "ridge_linear",           "model_type": "ridge",       "backfill": "linear"},
+    {"name": "ridge_xgb_backcast",     "model_type": "ridge",       "backfill": "xgboost_backcast"},
+    # SARIMA/SARIMAX
+    {"name": "sarima_baseline",        "model_type": "sarima",      "backfill": "zero"},
+    {"name": "sarimax_zero",           "model_type": "sarimax",     "backfill": "zero"},
+    {"name": "sarimax_linear",         "model_type": "sarimax",     "backfill": "linear"},
+    {"name": "sarimax_xgb_backcast",   "model_type": "sarimax",     "backfill": "xgboost_backcast"},
+    # Redes neuronales
+    {"name": "mlp_zero",               "model_type": "mlp",         "backfill": "zero"},
+    {"name": "mlp_linear",             "model_type": "mlp",         "backfill": "linear"},
+    {"name": "mlp_xgb_backcast",       "model_type": "mlp",         "backfill": "xgboost_backcast"},
+    {"name": "gru_zero",               "model_type": "gru",         "backfill": "zero"},
+    {"name": "gru_linear",             "model_type": "gru",         "backfill": "linear"},
+    {"name": "gru_xgb_backcast",       "model_type": "gru",         "backfill": "xgboost_backcast"},
+    {"name": "lstm_zero",              "model_type": "lstm",        "backfill": "zero"},
+    {"name": "lstm_linear",            "model_type": "lstm",        "backfill": "linear"},
+    {"name": "lstm_xgb_backcast",      "model_type": "lstm",        "backfill": "xgboost_backcast"},
+    {"name": "cnngru_zero",            "model_type": "cnn_gru",     "backfill": "zero"},
+    {"name": "cnngru_linear",          "model_type": "cnn_gru",     "backfill": "linear"},
+    {"name": "cnngru_xgb_backcast",    "model_type": "cnn_gru",     "backfill": "xgboost_backcast"},
+    {"name": "rescnngru_zero",         "model_type": "res_cnn_gru", "backfill": "zero"},
+    {"name": "rescnngru_linear",       "model_type": "res_cnn_gru", "backfill": "linear"},
+    {"name": "rescnngru_xgb_backcast", "model_type": "res_cnn_gru", "backfill": "xgboost_backcast"},
 ]
 
 
@@ -64,6 +81,12 @@ def main() -> None:
         if not exps:
             print(f"ERROR: ningún experimento coincide con: {args.only}")
             sys.exit(1)
+
+    # Guardar copia de params.yaml antes de que dvc exp run la modifique
+    import shutil
+    params_backup = "params.yaml.bak"
+    if not args.dry_run:
+        shutil.copy2("params.yaml", params_backup)
 
     failed = []
 
@@ -97,10 +120,16 @@ def main() -> None:
             print(f"  WARN: archive_experiment.py terminó con código {rc}.")
             failed.append(name)
 
-    # Restaurar params.yaml
+    # Restaurar params.yaml desde el backup local (no desde git)
     print(f"\n{'='*60}")
     print("Restaurando params.yaml al estado original...")
-    run(["git", "checkout", "params.yaml"], args.dry_run)
+    if not args.dry_run and os.path.exists(params_backup):
+        import shutil
+        shutil.copy2(params_backup, "params.yaml")
+        os.remove(params_backup)
+        print("  params.yaml restaurado desde backup local.")
+    else:
+        run(["git", "checkout", "params.yaml"], args.dry_run)
 
     # Gráficas de comparación
     if not args.dry_run:

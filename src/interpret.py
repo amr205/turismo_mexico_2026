@@ -83,29 +83,46 @@ def interpret(dataset: str) -> None:
     shap_values = model.get_shap_explainer(X_train)
 
     os.makedirs("plots", exist_ok=True)
-    fig, ax = plt.subplots(figsize=(8, 5))
-    shap.summary_plot(
-        shap_values,
-        X_train,
-        plot_type="bar",
-        max_display=shap_max_display,
-        show=False,
-    )
-    plt.title(f"Importancia de características (SHAP) — {dataset}")
-    plt.tight_layout()
-    plt.savefig(cfg["shap_out"], bbox_inches="tight")
-    plt.close()
-    print(f"Gráfica SHAP guardada en: {cfg['shap_out']}")
 
-    # Persistir valores SHAP y nombres de features para análisis cruzado
-    if params.get("interpret", {}).get("save_shap_values", False):
-        os.makedirs("data/shap", exist_ok=True)
-        shap_npz = f"data/shap/shap_values_{dataset}.npz"
-        feat_json = f"data/shap/feature_names_{dataset}.json"
-        np.savez(shap_npz, shap_values=shap_values)
-        with open(feat_json, "w") as f:
-            json.dump(list(X_train.columns), f)
-        print(f"Valores SHAP guardados en: {shap_npz}")
+    if np.all(shap_values == 0):
+        # Modelo sin importancia de features (ej. SARIMA) — crear plot vacío
+        print(f"SHAP omitido: todos los valores son cero ({model_type})")
+        fig, ax = plt.subplots(figsize=(8, 5))
+        ax.text(0.5, 0.5, f"SHAP N/A — {model_type}", ha="center", va="center",
+                fontsize=14, color="gray", transform=ax.transAxes)
+        ax.set_axis_off()
+        fig.savefig(cfg["shap_out"], bbox_inches="tight")
+        plt.close(fig)
+        # Guardar npz con ceros para satisfacer outputs de DVC
+        if params.get("interpret", {}).get("save_shap_values", False):
+            os.makedirs("data/shap", exist_ok=True)
+            np.savez(f"data/shap/shap_values_{dataset}.npz", shap_values=shap_values)
+            with open(f"data/shap/feature_names_{dataset}.json", "w") as f:
+                json.dump(list(X_train.columns), f)
+    else:
+        fig, ax = plt.subplots(figsize=(8, 5))
+        shap.summary_plot(
+            shap_values,
+            X_train,
+            plot_type="bar",
+            max_display=shap_max_display,
+            show=False,
+        )
+        plt.title(f"Importancia de características (SHAP) — {dataset}")
+        plt.tight_layout()
+        plt.savefig(cfg["shap_out"], bbox_inches="tight")
+        plt.close()
+        print(f"Gráfica SHAP guardada en: {cfg['shap_out']}")
+
+        # Persistir valores SHAP y nombres de features para análisis cruzado
+        if params.get("interpret", {}).get("save_shap_values", False):
+            os.makedirs("data/shap", exist_ok=True)
+            shap_npz = f"data/shap/shap_values_{dataset}.npz"
+            feat_json = f"data/shap/feature_names_{dataset}.json"
+            np.savez(shap_npz, shap_values=shap_values)
+            with open(feat_json, "w") as f:
+                json.dump(list(X_train.columns), f)
+            print(f"Valores SHAP guardados en: {shap_npz}")
 
     # --- STL ---
     df_proc = pd.read_csv(cfg["processed"], parse_dates=["date"])

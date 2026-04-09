@@ -3,10 +3,11 @@ Gráfica de impacto del método de backfill sobre todos los modelos.
 
 Lee métricas de metrics/{exp_name}/metrics_ivf_*.json y genera un gráfico de
 barras agrupadas donde:
-  - Eje X: 5 tipos de modelo (xgb, mlp, gru, cnngru, rescnngru)
+  - Eje X: 8 tipos de modelo con backfill variable (xgb, ridge, sarimax, mlp, gru, lstm, cnngru, rescnngru)
   - Barras agrupadas: 3 métodos de backfill (zero, linear, xgb_backcast)
   - Métricas: MAE, RMSE, R² (3 subplots)
   - Valores promedios sobre las 4 series IVF
+  (SARIMA excluido: solo corre baseline sin backfill variable)
 
 Salida: plots/general/backfill_impact.png
 
@@ -28,25 +29,35 @@ SERIES = [
 ]
 
 # (nombre_experimento, etiqueta_modelo, método_backfill)
+# SARIMA excluido: solo corre una vez (sarima_baseline), no tiene variante por backfill
 EXPERIMENT_GRID = {
     "zero": {
         "xgb":        "xgb_zero",
+        "ridge":      "ridge_zero",
+        "sarimax":    "sarimax_zero",
         "mlp":        "mlp_zero",
         "gru":        "gru_zero",
+        "lstm":       "lstm_zero",
         "cnngru":     "cnngru_zero",
         "rescnngru":  "rescnngru_zero",
     },
     "linear": {
         "xgb":        "xgb_linear",
+        "ridge":      "ridge_linear",
+        "sarimax":    "sarimax_linear",
         "mlp":        "mlp_linear",
         "gru":        "gru_linear",
+        "lstm":       "lstm_linear",
         "cnngru":     "cnngru_linear",
         "rescnngru":  "rescnngru_linear",
     },
     "xgb_backcast": {
         "xgb":        "xgb_xgb_backcast",
+        "ridge":      "ridge_xgb_backcast",
+        "sarimax":    "sarimax_xgb_backcast",
         "mlp":        "mlp_xgb_backcast",
         "gru":        "gru_xgb_backcast",
+        "lstm":       "lstm_xgb_backcast",
         "cnngru":     "cnngru_xgb_backcast",
         "rescnngru":  "rescnngru_xgb_backcast",
     },
@@ -60,8 +71,11 @@ BACKFILL_LABELS = {
 
 MODEL_LABELS = {
     "xgb":       "XGBoost",
+    "ridge":     "Ridge",
+    "sarimax":   "SARIMAX",
     "mlp":       "MLP",
     "gru":       "GRU",
+    "lstm":      "LSTM",
     "cnngru":    "CNN-GRU",
     "rescnngru": "Res-CNN-GRU",
 }
@@ -93,7 +107,7 @@ def plot() -> None:
     n_models = len(model_keys)
     n_backfills = len(backfill_keys)
 
-    fig, axes = plt.subplots(len(METRICS), 1, figsize=(13, 4 * len(METRICS)))
+    fig, axes = plt.subplots(len(METRICS), 1, figsize=(18, 4 * len(METRICS)))
     colors = plt.cm.Set2(np.linspace(0, 0.8, n_backfills))
 
     for ax, metric in zip(axes, METRICS):

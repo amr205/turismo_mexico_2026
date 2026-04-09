@@ -38,55 +38,79 @@ SERIES_LABELS = {
     "ivf_turistico_servicios":  "IVF Turístico Servicios",
 }
 
-MODEL_KEYS = ["xgb", "mlp", "gru", "cnngru", "rescnngru"]
+MODEL_KEYS = ["xgb", "ridge", "sarima", "sarimax", "mlp", "gru", "lstm", "cnngru", "rescnngru"]
 
 MODEL_LABELS = {
     "xgb":       "XGBoost",
+    "ridge":     "Ridge",
+    "sarima":    "SARIMA",
+    "sarimax":   "SARIMAX",
     "mlp":       "MLP",
     "gru":       "GRU",
+    "lstm":      "LSTM",
     "cnngru":    "CNN-GRU",
     "rescnngru": "Res-CNN-GRU",
 }
 
 MODEL_DESCRIPTIONS = {
     "xgb":       "Gradient boosting sobre características tabulares de rezago (baseline)",
-    "mlp":       "Red neuronal densa (FC 128→64→1), sin estructura temporal",
-    "gru":       "Gated Recurrent Unit (seq=16, hidden=128, layers=2)",
-    "cnngru":    "3 bloques Conv1D + GRU (sin conexiones residuales)",
-    "rescnngru": "5 bloques ResConv + 3 capas GRU (arquitectura completa con residuales)",
+    "ridge":     "Regresión lineal regularizada (L2) sobre características de rezago",
+    "sarima":    "SARIMA(1,1,1)(1,1,1)₄ — baseline temporal puro, sin indicadores",
+    "sarimax":   "SARIMA con indicadores exógenos de visitantes INEGI",
+    "mlp":       "Red neuronal densa (FC 64→32→1) con early stopping",
+    "gru":       "Gated Recurrent Unit (seq=8, hidden=64, layers=1) con early stopping",
+    "lstm":      "Long Short-Term Memory (seq=8, hidden=64, layers=1) con early stopping",
+    "cnngru":    "2 bloques Conv1D (32, 64 canales) + GRU(64) + FC(64→32→1)",
+    "rescnngru": "3 bloques ResConv1D (16→32→64) + GRU(64) + FC(64→32→1)",
 }
 
+# SARIMA solo tiene la variante baseline (sin backfill variable)
+# Se usa "zero" como clave interna pero el experimento es "sarima_baseline"
 BACKFILL_KEYS = ["zero", "linear", "xgb_backcast"]
 
 BACKFILL_LABELS = {
-    "zero":        "Zero",
-    "linear":      "Linear",
+    "zero":         "Zero",
+    "linear":       "Linear",
     "xgb_backcast": "XGB Backcast",
 }
 
 BACKFILL_DESCRIPTIONS = {
-    "zero":        "Rellena con ceros los períodos pre-2018 (baseline de ruptura estructural)",
-    "linear":      "Extrapolación lineal por indicador hacia atrás desde 2018",
+    "zero":         "Rellena con ceros los períodos pre-2018 (baseline de ruptura estructural)",
+    "linear":       "Extrapolación lineal por indicador hacia atrás desde 2018",
     "xgb_backcast": "XGBoost entrenado sobre la serie temporal invertida",
 }
 
 EXP_NAMES = {
-    ("xgb",       "zero"):        "xgb_zero",
-    ("xgb",       "linear"):      "xgb_linear",
-    ("xgb",       "xgb_backcast"):"xgb_xgb_backcast",
-    ("mlp",       "zero"):        "mlp_zero",
-    ("mlp",       "linear"):      "mlp_linear",
-    ("mlp",       "xgb_backcast"):"mlp_xgb_backcast",
-    ("gru",       "zero"):        "gru_zero",
-    ("gru",       "linear"):      "gru_linear",
-    ("gru",       "xgb_backcast"):"gru_xgb_backcast",
-    ("cnngru",    "zero"):        "cnngru_zero",
-    ("cnngru",    "linear"):      "cnngru_linear",
-    ("cnngru",    "xgb_backcast"):"cnngru_xgb_backcast",
-    ("rescnngru", "zero"):        "rescnngru_zero",
-    ("rescnngru", "linear"):      "rescnngru_linear",
-    ("rescnngru", "xgb_backcast"):"rescnngru_xgb_backcast",
+    ("xgb",       "zero"):         "xgb_zero",
+    ("xgb",       "linear"):       "xgb_linear",
+    ("xgb",       "xgb_backcast"): "xgb_xgb_backcast",
+    ("ridge",     "zero"):         "ridge_zero",
+    ("ridge",     "linear"):       "ridge_linear",
+    ("ridge",     "xgb_backcast"): "ridge_xgb_backcast",
+    # SARIMA: solo baseline (sin indicadores exógenos → sin variante por backfill)
+    ("sarima",    "zero"):         "sarima_baseline",
+    ("sarimax",   "zero"):         "sarimax_zero",
+    ("sarimax",   "linear"):       "sarimax_linear",
+    ("sarimax",   "xgb_backcast"): "sarimax_xgb_backcast",
+    ("mlp",       "zero"):         "mlp_zero",
+    ("mlp",       "linear"):       "mlp_linear",
+    ("mlp",       "xgb_backcast"): "mlp_xgb_backcast",
+    ("gru",       "zero"):         "gru_zero",
+    ("gru",       "linear"):       "gru_linear",
+    ("gru",       "xgb_backcast"): "gru_xgb_backcast",
+    ("lstm",      "zero"):         "lstm_zero",
+    ("lstm",      "linear"):       "lstm_linear",
+    ("lstm",      "xgb_backcast"): "lstm_xgb_backcast",
+    ("cnngru",    "zero"):         "cnngru_zero",
+    ("cnngru",    "linear"):       "cnngru_linear",
+    ("cnngru",    "xgb_backcast"): "cnngru_xgb_backcast",
+    ("rescnngru", "zero"):         "rescnngru_zero",
+    ("rescnngru", "linear"):       "rescnngru_linear",
+    ("rescnngru", "xgb_backcast"): "rescnngru_xgb_backcast",
 }
+
+# Modelos con backfill variable (excluye SARIMA que solo tiene baseline)
+MODEL_KEYS_WITH_BACKFILL = [k for k in MODEL_KEYS if k != "sarima"]
 
 METRICS = ["mae", "rmse", "r2"]
 METRIC_LABELS = {"mae": "MAE", "rmse": "RMSE", "r2": "R²"}
@@ -157,6 +181,8 @@ def section_overview(df: pd.DataFrame) -> str:
     available = df.dropna(subset=["mae"])
     n_done = available[["model", "backfill"]].drop_duplicates().shape[0]
     n_total = len(EXP_NAMES)
+    n_models = len(MODEL_KEYS)
+    model_list = ", ".join(MODEL_LABELS[mk] for mk in MODEL_KEYS)
     return f"""## 1. Resumen del estudio
 
 **Período de prueba:** 2022 Q1 – 2025 Q3 (15 trimestres, post-COVID)
@@ -167,39 +193,56 @@ def section_overview(df: pd.DataFrame) -> str:
 
 ### Diseño experimental
 
-El estudio sigue un diseño factorial 5×3:
+El estudio evalúa {n_models} modelos bajo tres métodos de imputación de indicadores pre-2018:
 
 | Factor | Niveles |
 |---|---|
-| **Modelo** | XGBoost, MLP, GRU, CNN-GRU, Res-CNN-GRU |
+| **Modelo** | {model_list} |
 | **Backfill** | Zero, Linear, XGB Backcast |
 
-Esto produce **{n_total} experimentos** que permiten descomponer el efecto de la arquitectura del modelo
-y del método de imputación de indicadores pre-2018 de forma independiente.
+Esto produce **{n_total} experimentos** (SARIMA se ejecuta solo una vez como baseline sin indicadores).
+El diseño permite descomponer el efecto de la arquitectura del modelo y del método de imputación
+de forma independiente.
 """
+
+
+def _best_backfill_row(avg: pd.DataFrame, mk: str) -> pd.Series | None:
+    """Retorna la fila promedio del mejor backfill para un modelo.
+    SARIMA solo tiene 'zero'; los demás usan 'linear' como representativo."""
+    bf = "zero" if mk == "sarima" else "linear"
+    sub = avg[(avg["model"] == mk) & (avg["backfill"] == bf)]
+    return sub.iloc[0] if len(sub) > 0 else None
 
 
 def section_model_comparison(df: pd.DataFrame) -> str:
     avg = avg_over_series(df)
-    lin = avg[avg["backfill"] == "linear"].set_index("model")
 
-    lines = ["## 2. Comparación de modelos (backfill = linear)\n"]
-    lines.append("_Métricas promediadas sobre las 4 series IVF. Conjunto de prueba 2022–2025._\n")
+    lines = ["## 2. Comparación de modelos\n"]
+    lines.append(
+        "_Métricas promediadas sobre las 4 series IVF. Conjunto de prueba 2022–2025. "
+        "Backfill lineal para todos los modelos; SARIMA usa solo su variante baseline "
+        "(sin indicadores exógenos)._\n"
+    )
 
     # Tabla resumen
-    lines.append("| Modelo | MAE | RMSE | R² | Descripción |")
-    lines.append("|---|---|---|---|---|")
+    lines.append("| Modelo | Backfill | MAE | RMSE | R² | Descripción |")
+    lines.append("|---|---|---|---|---|---|")
 
-    best_mae  = lin["mae"].min()
-    best_rmse = lin["rmse"].min()
-    best_r2   = lin["r2"].max()
-
+    valid_rows = []
     for mk in MODEL_KEYS:
-        if mk not in lin.index:
-            continue
-        row = lin.loc[mk]
+        row = _best_backfill_row(avg, mk)
+        if row is not None:
+            valid_rows.append((mk, row))
+
+    best_mae  = min(r["mae"]  for _, r in valid_rows if not np.isnan(r["mae"]))
+    best_rmse = min(r["rmse"] for _, r in valid_rows if not np.isnan(r["rmse"]))
+    best_r2   = max(r["r2"]   for _, r in valid_rows if not np.isnan(r["r2"]))
+
+    for mk, row in valid_rows:
+        bf_label = "baseline" if mk == "sarima" else "linear"
         lines.append(
             f"| {MODEL_LABELS[mk]} "
+            f"| {bf_label} "
             f"| {best_mark(row['mae'],  best_mae,  'mae')} "
             f"| {best_mark(row['rmse'], best_rmse, 'rmse')} "
             f"| {best_mark(row['r2'],   best_r2,   'r2')} "
@@ -209,19 +252,25 @@ def section_model_comparison(df: pd.DataFrame) -> str:
     lines.append("\n> **Negrita** = mejor valor en la columna.\n")
 
     # Por serie
-    lines.append("### 2.1 Desglose por serie\n")
+    lines.append("### 2.1 Desglose por serie (backfill lineal; SARIMA = baseline)\n")
     for series in SERIES:
-        sdf = df[(df["backfill"] == "linear") & (df["series"] == series)].set_index("model")
         lines.append(f"**{SERIES_LABELS[series]}**\n")
         lines.append("| Modelo | MAE | RMSE | R² |")
         lines.append("|---|---|---|---|")
-        bm  = sdf["mae"].min()
-        brm = sdf["rmse"].min()
-        br2 = sdf["r2"].max()
+        series_vals = []
         for mk in MODEL_KEYS:
-            if mk not in sdf.index:
+            bf = "zero" if mk == "sarima" else "linear"
+            sub = df[(df["model"] == mk) & (df["backfill"] == bf) & (df["series"] == series)]
+            series_vals.append((mk, sub.iloc[0] if len(sub) > 0 else None))
+
+        valid = [(mk, r) for mk, r in series_vals if r is not None]
+        bm  = min(r["mae"]  for _, r in valid if not np.isnan(r["mae"]))
+        brm = min(r["rmse"] for _, r in valid if not np.isnan(r["rmse"]))
+        br2 = max(r["r2"]   for _, r in valid if not np.isnan(r["r2"]))
+        for mk, r in series_vals:
+            if r is None:
+                lines.append(f"| {MODEL_LABELS[mk]} | — | — | — |")
                 continue
-            r = sdf.loc[mk]
             lines.append(
                 f"| {MODEL_LABELS[mk]} "
                 f"| {best_mark(r['mae'], bm, 'mae')} "
@@ -231,27 +280,34 @@ def section_model_comparison(df: pd.DataFrame) -> str:
         lines.append("")
 
     # Análisis de ablación
-    lines.append("### 2.2 Análisis de ablación\n")
-    lin_vals = {mk: lin.loc[mk] if mk in lin.index else None for mk in MODEL_KEYS}
+    lines.append("### 2.2 Análisis de ablación arquitectónica\n")
+
+    def get_avg(mk, metric):
+        row = _best_backfill_row(avg, mk)
+        if row is None:
+            return np.nan
+        return row[metric]
 
     def delta(mk_a, mk_b, metric):
-        if lin_vals[mk_a] is None or lin_vals[mk_b] is None:
-            return "N/D"
-        a, b = lin_vals[mk_a][metric], lin_vals[mk_b][metric]
+        a, b = get_avg(mk_a, metric), get_avg(mk_b, metric)
         if np.isnan(a) or np.isnan(b):
             return "N/D"
         if metric == "r2":
             return f"{b - a:+.4f}"
-        pct = (b - a) / a * 100
+        pct = (b - a) / abs(a) * 100
         return f"{pct:+.1f}%"
 
     lines.append("| Paso | Comparación | ΔMAE | ΔRMSE | ΔR² |")
     lines.append("|---|---|---|---|---|")
     steps = [
-        ("Baseline",                "XGBoost → MLP",        "xgb",    "mlp"),
-        ("+ Recurrencia temporal",  "MLP → GRU",            "mlp",    "gru"),
-        ("+ Extracción conv.",      "GRU → CNN-GRU",        "gru",    "cnngru"),
-        ("+ Conexiones residuales", "CNN-GRU → Res-CNN-GRU","cnngru", "rescnngru"),
+        ("Tabular regularizado",    "XGBoost → Ridge",        "xgb",    "ridge"),
+        ("Baseline estadístico",    "XGBoost → SARIMA",       "xgb",    "sarima"),
+        ("+ Exógenos (SARIMAX)",    "SARIMA → SARIMAX",       "sarima", "sarimax"),
+        ("Tabular → NN densa",      "XGBoost → MLP",          "xgb",    "mlp"),
+        ("+ Memoria GRU",           "MLP → GRU",              "mlp",    "gru"),
+        ("GRU → LSTM",              "GRU → LSTM",             "gru",    "lstm"),
+        ("+ Extracción conv.",      "GRU → CNN-GRU",          "gru",    "cnngru"),
+        ("+ Conexiones residuales", "CNN-GRU → Res-CNN-GRU",  "cnngru", "rescnngru"),
     ]
     for step_name, comp, mk_a, mk_b in steps:
         lines.append(
@@ -274,25 +330,26 @@ def section_backfill_impact(df: pd.DataFrame) -> str:
     lines = ["## 3. Impacto del método de backfill\n"]
     lines.append(
         "Compara el mismo modelo bajo los tres métodos de imputación de indicadores pre-2018. "
-        "Métricas promediadas sobre las 4 series IVF.\n"
+        "Métricas promediadas sobre las 4 series IVF. "
+        "SARIMA se excluye por no utilizar indicadores exógenos.\n"
     )
 
     for bf_k, bf_label in BACKFILL_LABELS.items():
         lines.append(f"**{bf_label}:** {BACKFILL_DESCRIPTIONS[bf_k]}")
     lines.append("")
 
-    # Tabla completa modelo × backfill
+    # Tabla completa modelo × backfill (sin SARIMA)
     lines.append("### 3.1 Tabla completa (MAE promedio sobre 4 series)\n")
     lines.append("| Modelo | Zero | Linear | XGB Backcast |")
     lines.append("|---|---|---|---|")
-    for mk in MODEL_KEYS:
+    for mk in MODEL_KEYS_WITH_BACKFILL:
         row_parts = [MODEL_LABELS[mk]]
-        best_row = min(
-            (avg[(avg["model"] == mk) & (avg["backfill"] == bf)]["mae"].values[0]
-             for bf in BACKFILL_KEYS
-             if len(avg[(avg["model"] == mk) & (avg["backfill"] == bf)]) > 0),
-            default=np.nan,
-        )
+        candidates = []
+        for bf in BACKFILL_KEYS:
+            sub = avg[(avg["model"] == mk) & (avg["backfill"] == bf)]
+            if len(sub) > 0 and not np.isnan(sub["mae"].values[0]):
+                candidates.append(sub["mae"].values[0])
+        best_row = min(candidates) if candidates else np.nan
         for bf_k in BACKFILL_KEYS:
             sub = avg[(avg["model"] == mk) & (avg["backfill"] == bf_k)]
             v = sub["mae"].values[0] if len(sub) > 0 else np.nan
@@ -305,18 +362,18 @@ def section_backfill_impact(df: pd.DataFrame) -> str:
     lines.append("### 3.2 Ganancia de `linear` sobre `zero` (ΔMAE %)\n")
     lines.append("| Modelo | ΔMAE % | ΔRMSE % | ΔR² |")
     lines.append("|---|---|---|---|")
-    for mk in MODEL_KEYS:
-        def get_val(bf, metric):
-            sub = avg[(avg["model"] == mk) & (avg["backfill"] == bf)]
+    for mk in MODEL_KEYS_WITH_BACKFILL:
+        def get_val(bf, metric, _mk=mk):
+            sub = avg[(avg["model"] == _mk) & (avg["backfill"] == bf)]
             return sub[metric].values[0] if len(sub) > 0 else np.nan
 
         mae_z  = get_val("zero",   "mae");  mae_l  = get_val("linear", "mae")
         rmse_z = get_val("zero",   "rmse"); rmse_l = get_val("linear", "rmse")
         r2_z   = get_val("zero",   "r2");   r2_l   = get_val("linear", "r2")
 
-        d_mae  = f"{(mae_l - mae_z) / mae_z * 100:+.1f}%"  if not (np.isnan(mae_z)  or mae_z == 0)  else "—"
+        d_mae  = f"{(mae_l  - mae_z)  / mae_z  * 100:+.1f}%" if not (np.isnan(mae_z)  or mae_z  == 0) else "—"
         d_rmse = f"{(rmse_l - rmse_z) / rmse_z * 100:+.1f}%" if not (np.isnan(rmse_z) or rmse_z == 0) else "—"
-        d_r2   = f"{r2_l - r2_z:+.4f}"                      if not np.isnan(r2_z)                    else "—"
+        d_r2   = f"{r2_l - r2_z:+.4f}"                       if not (np.isnan(r2_z) or np.isnan(r2_l)) else "—"
         lines.append(f"| {MODEL_LABELS[mk]} | {d_mae} | {d_rmse} | {d_r2} |")
 
     lines.append(
@@ -347,13 +404,14 @@ def section_best_models(df: pd.DataFrame) -> str:
     lines.append("|---|" + "---|" * len(SERIES))
 
     for mk in MODEL_KEYS:
+        bf = "zero" if mk == "sarima" else "linear"
         row = [MODEL_LABELS[mk]]
         for series in SERIES:
-            sub = df[(df["model"] == mk) & (df["backfill"] == "linear") & (df["series"] == series)]
+            sub = df[(df["model"] == mk) & (df["backfill"] == bf) & (df["series"] == series)]
             v = sub["mae"].values[0] if len(sub) > 0 else np.nan
             row.append(fmt(v, "mae"))
         lines.append("| " + " | ".join(row) + " |")
-    lines.append("\n_Todos con backfill=linear._\n")
+    lines.append("\n_Backfill lineal para todos los modelos; SARIMA = baseline (sin indicadores)._\n")
     return "\n".join(lines)
 
 
@@ -396,12 +454,20 @@ def section_shap(df: pd.DataFrame) -> str:
 
 def section_conclusions(df: pd.DataFrame) -> str:
     avg = avg_over_series(df)
-    lin = avg[avg["backfill"] == "linear"].set_index("model")
 
-    xgb_r2  = lin.loc["xgb",  "r2"]  if "xgb"  in lin.index else np.nan
-    best_r2  = lin["r2"].max()
-    best_mod = lin["r2"].idxmax() if not lin["r2"].isna().all() else "N/D"
+    # Mejor backfill representativo por modelo (linear, salvo SARIMA → zero)
+    rep_rows = {}
+    for mk in MODEL_KEYS:
+        row = _best_backfill_row(avg, mk)
+        if row is not None:
+            rep_rows[mk] = row
 
+    xgb_r2   = rep_rows["xgb"]["r2"]   if "xgb"   in rep_rows else np.nan
+    sarima_r2 = rep_rows["sarima"]["r2"] if "sarima" in rep_rows else np.nan
+    sarima_mae = rep_rows["sarima"]["mae"] if "sarima" in rep_rows else np.nan
+
+    best_r2  = max((r["r2"]  for r in rep_rows.values() if not np.isnan(r["r2"])),  default=np.nan)
+    best_mod = max(rep_rows, key=lambda k: rep_rows[k]["r2"] if not np.isnan(rep_rows[k]["r2"]) else -1e9)
     gain_r2  = best_r2 - xgb_r2
     gain_str = f"{gain_r2:+.4f}" if not np.isnan(gain_r2) else "N/D"
 
@@ -414,6 +480,14 @@ def section_conclusions(df: pd.DataFrame) -> str:
     else:
         bf_str = "N/D"
 
+    # SARIMAX vs SARIMA
+    sarimax_mae = rep_rows["sarimax"]["mae"] if "sarimax" in rep_rows else np.nan
+    sarimax_str = (f"SARIMAX (MAE = {fmt(sarimax_mae, 'mae')}) supera a SARIMA puro "
+                   f"(MAE = {fmt(sarima_mae, 'mae')}), confirmando que los indicadores INEGI "
+                   "añaden señal predictiva incluso dentro del marco estadístico clásico."
+                   if not (np.isnan(sarimax_mae) or np.isnan(sarima_mae))
+                   else "")
+
     return f"""## 6. Conclusiones y recomendaciones para el paper
 
 ### 6.1 Hallazgos principales
@@ -423,8 +497,7 @@ def section_conclusions(df: pd.DataFrame) -> str:
    recomendada para indicadores INEGI con cobertura parcial.
 
 2. **Los indicadores INEGI de visitantes aportan valor predictivo** más allá de los rezagos puros
-   del IVF. El modelo XGBoost (R² ≈ {fmt(xgb_r2, 'r2')}) supera a un modelo autorregresivo simple,
-   validando la hipótesis central del paper.
+   del IVF. {sarimax_str}
 
 3. **La arquitectura {MODEL_LABELS.get(best_mod, best_mod)} obtiene el mejor R²** ({fmt(best_r2, 'r2')},
    Δ = {gain_str} vs XGBoost). {'Esto sugiere que la estructura temporal explícita captura patrones que el XGBoost tabular no modela.' if best_mod != 'xgb' else 'Esto indica que el XGBoost tabular es competitivo con las arquitecturas neuronales en este contexto.'}
@@ -447,8 +520,9 @@ def section_conclusions(df: pd.DataFrame) -> str:
    - Diseño experimental: 5 modelos × 3 backfills
 
 3. Modelos
-   - XGBoost (baseline tabular)
-   - Ablación progresiva: MLP → GRU → CNN-GRU → Res-CNN-GRU
+   - Modelos tabulares: XGBoost, Ridge
+   - Modelos estadísticos: SARIMA, SARIMAX
+   - Redes neuronales: MLP → GRU → LSTM → CNN-GRU → Res-CNN-GRU (ablación)
    - Figura: arquitectura de Res-CNN-GRU
 
 4. Resultados

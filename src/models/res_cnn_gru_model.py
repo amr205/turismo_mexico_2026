@@ -1,18 +1,19 @@
 """
 Modelo Res-CNN-GRU para pronóstico de series de tiempo.
 
-Arquitectura completa (basada en imagen de referencia, adaptada a regresión):
-    5 ResConvBlock (Conv1D × 2 + BN + conexión residual + MaxPool)
-      canales: n_features → 32 → 64 → 128 → 256 → 256
-      seq_len: 16 → 15 → 14 → 13 → 12 → 11
-    3 capas GRU (hidden=256)
-    FC(256 → 256) → ReLU → Dropout
-    FC(256 → 128) → ReLU → Dropout
-    FC(128 → 1)
+Arquitectura (reducida):
+    3 ResConvBlock (Conv1D × 2 + BN + conexión residual + MaxPool)
+      canales: n_features → 16 → 32 → 64
+      seq_len: 8 → 7 → 6 → 5
+    GRU(input=64, hidden=64, layers=1)
+    FC(64 → 32) → ReLU → Dropout
+    FC(32 → 1)
 
-Evalúa la contribución de las conexiones residuales y la jerarquía de características
-más profunda frente al CNN-GRU sin residuales.
+Evalúa la contribución de las conexiones residuales frente al CNN-GRU sin residuales.
+Incluye val split (20%) + early stopping con patience=30.
 """
+
+import copy
 
 import numpy as np
 import torch
@@ -69,7 +70,7 @@ class _ResCNNGRUNet(nn.Module):
             in_ch = out_ch
         self.res_blocks = nn.ModuleList(res_blocks)
 
-        # GRU (apila num_layers manualmente para dropout uniforme entre capas)
+        # GRU
         self.gru = nn.GRU(
             input_size=in_ch,
             hidden_size=gru_hidden,
@@ -99,22 +100,24 @@ class _ResCNNGRUNet(nn.Module):
 
 
 class ResCNNGRUForecaster(BaseForecaster):
-    """Res-CNN-GRU — arquitectura completa con conexiones residuales y GRU profundo."""
+    """Res-CNN-GRU — arquitectura con conexiones residuales y GRU."""
 
     def __init__(self, params: dict):
         self.params = params
-        self.seq_len = params.get("sequence_length", 16)
-        self.conv_channels = params.get("conv_channels", [32, 64, 128, 256, 256])
-        self.gru_hidden = params.get("gru_hidden_size", 256)
-        self.gru_layers = params.get("gru_num_layers", 3)
-        self.fc_layers = params.get("fc_layers", [256, 128])
-        self.dropout = params.get("dropout", 0.3)
-        self.epochs = params.get("epochs", 200)
-        self.lr = params.get("learning_rate", 0.001)
-        self.batch_size = params.get("batch_size", 16)
+        self.seq_len = params.get("sequence_length", 8)
+        self.conv_channels = params.get("conv_channels", [16, 32, 64])
+        self.gru_hidden = params.get("gru_hidden_size", 64)
+        self.gru_layers = params.get("gru_num_layers", 1)
+        self.fc_layers = params.get("fc_layers", [64, 32])
+        self.dropout = params.get("dropout", 0.2)
+        self.epochs = params.get("epochs", 500)
+        self.lr = params.get("learning_rate", 0.0005)
+        self.batch_size = params.get("batch_size", 8)
         self.model: _ResCNNGRUNet | None = None
         self.n_features: int | None = None
         self.context_X: np.ndarray | None = None
+        self.train_losses: list = []
+        self.val_losses: list = []
 
     # ------------------------------------------------------------------
     def fit(self, X_train, y_train) -> None:
@@ -138,21 +141,60 @@ class ResCNNGRUForecaster(BaseForecaster):
         X_wins = np.stack([X[i : i + self.seq_len] for i in range(n - self.seq_len)], axis=0)
         y_wins = y[self.seq_len:]
 
+        # Val split cronológico (último 20%)
+        n_val = max(1, int(len(X_wins) * 0.2))
+        X_tr, X_vl = X_wins[:-n_val], X_wins[-n_val:]
+        y_tr, y_vl = y_wins[:-n_val], y_wins[-n_val:]
+
         dataset = torch.utils.data.TensorDataset(
-            torch.from_numpy(X_wins), torch.from_numpy(y_wins)
+            torch.from_numpy(X_tr), torch.from_numpy(y_tr)
         )
         loader = torch.utils.data.DataLoader(
             dataset, batch_size=self.batch_size, shuffle=True
         )
 
-        self.model.train()
+        patience = self.params.get("early_stopping_patience", 30)
+        self.train_losses, self.val_losses = [], []
+        best_val = float("inf")
+        wait = 0
+        best_state = None
+
         for epoch in range(self.epochs):
+            self.model.train()
+            epoch_loss = 0.0
+            n_batches = 0
             for xb, yb in loader:
                 optimizer.zero_grad()
-                loss_fn(self.model(xb), yb).backward()
+                loss = loss_fn(self.model(xb), yb)
+                loss.backward()
                 optimizer.step()
-            if (epoch + 1) % 50 == 0:
-                print(f"  Res-CNN-GRU época {epoch + 1}/{self.epochs}")
+                epoch_loss += loss.item()
+                n_batches += 1
+            train_loss = epoch_loss / max(n_batches, 1)
+
+            self.model.eval()
+            with torch.no_grad():
+                val_loss = loss_fn(
+                    self.model(torch.from_numpy(X_vl)),
+                    torch.from_numpy(y_vl),
+                ).item()
+
+            self.train_losses.append(train_loss)
+            self.val_losses.append(val_loss)
+
+            if val_loss < best_val - 1e-4:
+                best_val = val_loss
+                wait = 0
+                best_state = copy.deepcopy(self.model.state_dict())
+            else:
+                wait += 1
+                if wait >= patience:
+                    print(f"  Res-CNN-GRU early stop época {epoch + 1}")
+                    break
+
+        if best_state is not None:
+            self.model.load_state_dict(best_state)
+        self.model.eval()
 
     # ------------------------------------------------------------------
     def predict(self, X) -> np.ndarray:
@@ -174,6 +216,8 @@ class ResCNNGRUForecaster(BaseForecaster):
                 "n_features": self.n_features,
                 "context_X": self.context_X,
                 "params": self.params,
+                "train_losses": self.train_losses,
+                "val_losses": self.val_losses,
             },
             path,
         )
@@ -184,6 +228,8 @@ class ResCNNGRUForecaster(BaseForecaster):
         instance = cls(data["params"])
         instance.n_features = data["n_features"]
         instance.context_X = data["context_X"]
+        instance.train_losses = data.get("train_losses", [])
+        instance.val_losses = data.get("val_losses", [])
         instance.model = _ResCNNGRUNet(
             instance.n_features,
             instance.conv_channels,

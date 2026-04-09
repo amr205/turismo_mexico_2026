@@ -19,11 +19,15 @@ import numpy as np
 
 # Experimentos a comparar (nombre → etiqueta en la gráfica)
 EXPERIMENTS = {
-    "xgb_linear": "XGBoost\n(linear backfill)",
-    "mlp_linear": "MLP\n(linear backfill)",
-    "gru_linear": "GRU\n(linear backfill)",
-    "cnngru_linear": "CNN-GRU\n(linear backfill)",
-    "rescnngru_linear": "Res-CNN-GRU\n(linear backfill)",
+    "xgb_linear":       "XGBoost\n(linear)",
+    "ridge_linear":     "Ridge\n(linear)",
+    "sarima_baseline":  "SARIMA\n(baseline)",
+    "sarimax_linear":   "SARIMAX\n(linear)",
+    "mlp_linear":       "MLP\n(linear)",
+    "gru_linear":       "GRU\n(linear)",
+    "lstm_linear":      "LSTM\n(linear)",
+    "cnngru_linear":    "CNN-GRU\n(linear)",
+    "rescnngru_linear": "Res-CNN-GRU\n(linear)",
 }
 
 SERIES = [
@@ -61,7 +65,7 @@ def plot() -> None:
     n_exp = len(exp_names)
     n_series = len(SERIES)
 
-    fig, axes = plt.subplots(len(METRICS), 1, figsize=(14, 4 * len(METRICS)))
+    fig, axes = plt.subplots(len(METRICS), 1, figsize=(20, 4 * len(METRICS)))
     colors = plt.cm.tab10(np.linspace(0, 0.8, n_exp))
 
     for ax, metric in zip(axes, METRICS):

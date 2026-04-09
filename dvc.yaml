@@ -75,6 +75,10 @@ stages:
       - src/models/gru_model.py
       - src/models/cnn_gru_model.py
       - src/models/res_cnn_gru_model.py
+      - src/models/sarima_model.py
+      - src/models/sarimax_model.py
+      - src/models/ridge_model.py
+      - src/models/lstm_model.py
       - data/features/features_consumo.csv
       - params.yaml
     params:
@@ -97,6 +101,10 @@ stages:
       - src/models/gru_model.py
       - src/models/cnn_gru_model.py
       - src/models/res_cnn_gru_model.py
+      - src/models/sarima_model.py
+      - src/models/sarimax_model.py
+      - src/models/ridge_model.py
+      - src/models/lstm_model.py
       - data/features/features_ivf.csv
       - params.yaml
     params:
@@ -119,6 +127,10 @@ stages:
       - src/models/gru_model.py
       - src/models/cnn_gru_model.py
       - src/models/res_cnn_gru_model.py
+      - src/models/sarima_model.py
+      - src/models/sarimax_model.py
+      - src/models/ridge_model.py
+      - src/models/lstm_model.py
       - data/features/features_consumo.csv
       - models/model_consumo.json
       - models/split_consumo.json
@@ -144,6 +156,10 @@ stages:
       - src/models/gru_model.py
       - src/models/cnn_gru_model.py
       - src/models/res_cnn_gru_model.py
+      - src/models/sarima_model.py
+      - src/models/sarimax_model.py
+      - src/models/ridge_model.py
+      - src/models/lstm_model.py
       - data/features/features_ivf.csv
       - models/model_ivf.json
       - models/split_ivf.json
@@ -169,6 +185,10 @@ stages:
       - src/models/gru_model.py
       - src/models/cnn_gru_model.py
       - src/models/res_cnn_gru_model.py
+      - src/models/sarima_model.py
+      - src/models/sarimax_model.py
+      - src/models/ridge_model.py
+      - src/models/lstm_model.py
       - data/features/features_consumo.csv
       - data/processed/consumo_turistico_inegi_clean.csv
       - models/model_consumo.json
@@ -194,6 +214,10 @@ stages:
       - src/models/gru_model.py
       - src/models/cnn_gru_model.py
       - src/models/res_cnn_gru_model.py
+      - src/models/sarima_model.py
+      - src/models/sarimax_model.py
+      - src/models/ridge_model.py
+      - src/models/lstm_model.py
       - data/features/features_ivf.csv
       - data/processed/indice_volumen_fisico_inegi_clean.csv
       - models/model_ivf.json
@@ -260,6 +284,10 @@ stages:
         - src/models/gru_model.py
         - src/models/cnn_gru_model.py
         - src/models/res_cnn_gru_model.py
+        - src/models/sarima_model.py
+        - src/models/sarimax_model.py
+        - src/models/ridge_model.py
+        - src/models/lstm_model.py
         - data/features/features_${item}.csv
         - params.yaml
       params:
@@ -288,6 +316,10 @@ stages:
         - src/models/gru_model.py
         - src/models/cnn_gru_model.py
         - src/models/res_cnn_gru_model.py
+        - src/models/sarima_model.py
+        - src/models/sarimax_model.py
+        - src/models/ridge_model.py
+        - src/models/lstm_model.py
         - data/features/features_${item}.csv
         - models/model_${item}.json
         - models/split_${item}.json
@@ -319,6 +351,10 @@ stages:
         - src/models/gru_model.py
         - src/models/cnn_gru_model.py
         - src/models/res_cnn_gru_model.py
+        - src/models/sarima_model.py
+        - src/models/sarimax_model.py
+        - src/models/ridge_model.py
+        - src/models/lstm_model.py
         - data/features/features_${item}.csv
         - data/processed/indice_volumen_fisico_inegi_clean.csv
         - models/model_${item}.json
